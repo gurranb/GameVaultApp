@@ -125,8 +125,26 @@ namespace GameVaultApp.Areas.Identity.Pages.Account.Manage
                 throw new InvalidOperationException($"Unexpected error occurred loading external login info.");
             }
 
-            var result = await _userManager.AddLoginAsync(user, info);
-            if (!result.Succeeded)
+            // If the provider is Steam, extract the Steam ID
+            if (info.LoginProvider == "Steam")
+            {
+                // The Steam ID will be in the ProviderKey
+                var steamId = info.ProviderKey;
+
+                // Save the Steam ID to the user's profile
+                user.SteamId = steamId;
+
+                // Update the user's information in the database
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    StatusMessage = "The Steam ID could not be saved. Please try again.";
+                    return RedirectToPage();
+                }
+            }
+
+            var resultLogin = await _userManager.AddLoginAsync(user, info);
+            if (!resultLogin.Succeeded)
             {
                 StatusMessage = "The external login was not added. External logins can only be associated with one account.";
                 return RedirectToPage();

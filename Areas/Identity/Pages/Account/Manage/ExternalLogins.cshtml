@@ -45,7 +45,10 @@
             <p>
                 @foreach (var provider in Model.OtherLogins)
                 {
-                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    <button type="submit" name="provider" value="@provider.Name" style="all: unset; border: none; padding: 0; cursor: pointer;">
+                        <img src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_01.png"
+                             alt="Sign in through Steam" />
+                    </button>
                 }
             </p>
         </div>

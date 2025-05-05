@@ -15,5 +15,7 @@ public class GameVaultAppUser : IdentityUser
     [PersonalData]
     public string LastName { get; set; }
 
+    public string SteamId { get; set; }
+
 }
 

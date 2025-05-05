@@ -1,0 +1,57 @@
+﻿@page
+@model GameVaultApp.Pages.ProfilePageModel
+@{
+}
+
+<h2>Steam Profile</h2>
+
+@if (Model.SteamProfile != null)
+{
+    <div>
+        <h3>@Model.SteamProfile.Personaname</h3>
+        <img src="@Model.SteamProfile.AvatarFull" alt="Steam Avatar" width="100" />
+        <p>Steam Profile URL: <a href="@Model.SteamProfile.Profileurl" target="_blank">@Model.SteamProfile.Profileurl</a></p>
+    </div>
+}
+else
+{
+    <p>No Steam profile found or not linked.</p>
+}
+
+<h2>Owned Games</h2>
+
+@if (Model.OwnedGames != null && Model.OwnedGames.Any())
+{
+    <ul>
+        @foreach (var game in Model.OwnedGames)
+        {
+            <li style="margin-bottom: 10px;">
+                <img src="@game.GetIconUrl()" width="64" alt="Logo" style="vertical-align:middle; margin-right:10px;" />
+                <strong>@game.Name</strong> — Played: @(game.PlaytimeForever / 60) hrs
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No games found or profile is private.</p>
+}
+
+<h2>Friend List</h2>
+
+@if (Model.FriendProfiles.Any())
+{
+    <ul>
+        @foreach (var friend in Model.FriendProfiles)
+        {
+            <li>
+                <img src="@friend.Avatar" alt="Avatar" width="32" height="32" />
+                <a href="@friend.Profileurl" target="_blank">@friend.Personaname</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No friends found or failed to load friend list.</p>
+}
