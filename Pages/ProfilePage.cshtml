@@ -1,57 +1,117 @@
 ﻿@page
 @model GameVaultApp.Pages.ProfilePageModel
 @{
+    Layout = "_Layout";
 }
 
-<h2>Steam Profile</h2>
+<div class="container mt-5">
 
-@if (Model.SteamProfile != null)
-{
-    <div>
-        <h3>@Model.SteamProfile.Personaname</h3>
-        <img src="@Model.SteamProfile.AvatarFull" alt="Steam Avatar" width="100" />
-        <p>Steam Profile URL: <a href="@Model.SteamProfile.Profileurl" target="_blank">@Model.SteamProfile.Profileurl</a></p>
-    </div>
-}
-else
-{
-    <p>No Steam profile found or not linked.</p>
-}
+    <!-- Steam Profile -->
+    <section class="mb-5">
+        <h2 class="mb-4">Steam Profile</h2>
 
-<h2>Owned Games</h2>
-
-@if (Model.OwnedGames != null && Model.OwnedGames.Any())
-{
-    <ul>
-        @foreach (var game in Model.OwnedGames)
+        @if (Model.SteamProfile != null)
         {
-            <li style="margin-bottom: 10px;">
-                <img src="@game.GetIconUrl()" width="64" alt="Logo" style="vertical-align:middle; margin-right:10px;" />
-                <strong>@game.Name</strong> — Played: @(game.PlaytimeForever / 60) hrs
-            </li>
+            <div class="d-flex align-items-center">
+                <img src="@Model.SteamProfile.AvatarFull" class="rounded me-3" width="100" alt="Steam Avatar" />
+                <div>
+                    <h4 class="mb-1">@Model.SteamProfile.Personaname</h4>
+                    <a href="@Model.SteamProfile.Profileurl" class="text-primary" target="_blank">
+                        View Steam Profile
+                    </a>
+                </div>
+            </div>
         }
-    </ul>
-}
-else
-{
-    <p>No games found or profile is private.</p>
-}
-
-<h2>Friend List</h2>
-
-@if (Model.FriendProfiles.Any())
-{
-    <ul>
-        @foreach (var friend in Model.FriendProfiles)
+        else
         {
-            <li>
-                <img src="@friend.Avatar" alt="Avatar" width="32" height="32" />
-                <a href="@friend.Profileurl" target="_blank">@friend.Personaname</a>
-            </li>
+            <div class="alert alert-warning">No Steam profile found or not linked.</div>
         }
-    </ul>
-}
-else
-{
-    <p>No friends found or failed to load friend list.</p>
-}
+    </section>
+
+    <!-- Owned Games -->
+    <section class="mb-5">
+        <h2 class="mb-4">Owned Games</h2>
+
+        @if (Model.OwnedGames != null && Model.OwnedGames.Any())
+        {
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                @foreach (var game in Model.OwnedGames)
+                {
+                    <a asp-page="/GameDetails"
+                       asp-route-AppId="@game.AppId"
+                       asp-route-steamId="@Model.SteamProfile.SteamId"
+                       class="text-decoration-none text-dark">
+                        <div class="card h-100 shadow-sm border-light">
+
+                            <img src="@game.GetIconUrl()" class="card-img-top rounded-3" alt="@game.Name Icon" style="max-width: 80px; height: auto;" />
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">@game.Name</h5>
+                                    <p class="card-text text-muted mb-0">Played: @(game.PlaytimeForever / 60) hrs</p>
+                                </div>
+                           
+                        </div>
+                    </a>
+                }
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-page="/Profile" asp-route-pageNumber="@(Model.CurrentPage - 1)" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        }
+
+                        @for (var i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-page="/Profile" asp-route-pageNumber="@i">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-page="/Profile" asp-route-pageNumber="@(Model.CurrentPage + 1)" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No games found or profile is private.</div>
+        }
+    </section>
+
+    <!-- Friend List -->
+    <section>
+        <h2 class="mb-4">Friend List</h2>
+
+        @if (Model.FriendProfiles.Any())
+        {
+            <ul class="list-group">
+                @foreach (var friend in Model.FriendProfiles)
+                {
+                    <li class="list-group-item d-flex align-items-center">
+                        <img src="@friend.Avatar" width="32" height="32" class="rounded-circle me-2" alt="Avatar" />
+                        <a href="@friend.Profileurl" target="_blank">@friend.Personaname</a>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="alert alert-secondary">No friends found or failed to load friend list.</div>
+        }
+    </section>
+
+</div>

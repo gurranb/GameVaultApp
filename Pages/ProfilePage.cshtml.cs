@@ -16,6 +16,11 @@ namespace GameVaultApp.Pages
 
         public List<OwnedGame> OwnedGames { get; set; } = new();
 
+        public int CurrentPage { get; set; } = 1;
+        public int TotalPages { get; set; }
+        public int PageSize { get; set; } = 100; // Number of games per page
+
+
         public ProfilePageModel(UserManager<GameVaultAppUser> userManager, SteamService steamService)
         {
             _userManager = userManager;
@@ -23,7 +28,7 @@ namespace GameVaultApp.Pages
         }
 
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(int pageNumber = 1)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null && !string.IsNullOrEmpty(user.SteamId))
@@ -31,10 +36,18 @@ namespace GameVaultApp.Pages
                 // Fetch Steam profile using the Steam ID
                 SteamProfile = await _steamService.GetSteamProfileAsync(user.SteamId);
 
+                CurrentPage = pageNumber;
+
 
                 try
                 {
-                    OwnedGames = await _steamService.GetOwnedGamesAsync(user.SteamId);
+                    var allGames = await _steamService.GetOwnedGamesAsync(user.SteamId);
+
+                    // Set the total pages
+                    TotalPages = (int)Math.Ceiling((double)allGames.Count / PageSize);
+
+                    // Get the games for the current page
+                    OwnedGames = allGames.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
                 }
                 catch (HttpRequestException ex)
                 {
