@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+using static GameVaultApp.Endpoints.steam.SteamInventoryResponse;
 
 namespace GameVaultApp.Endpoints.steam
 {
@@ -12,6 +14,15 @@ namespace GameVaultApp.Endpoints.steam
         public SteamService(HttpClient httpClient)
         {
             _httpClient = httpClient;
+        }
+        // Method to extract the numeric Steam ID from OpenID URL
+        private string ExtractSteamId(string steamIdUrl)
+        {
+            if (string.IsNullOrEmpty(steamIdUrl))
+                return string.Empty;
+
+            // Extract the Steam ID part after the last '/' in the OpenID URL
+            return steamIdUrl.Substring(steamIdUrl.LastIndexOf('/') + 1);
         }
 
         // Fetch user profile by Steam ID
@@ -29,7 +40,7 @@ namespace GameVaultApp.Endpoints.steam
         {
             steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
 
-            var url = $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={_steamApiKey}&steamid={steamId}&include_appinfo=true&format=json";
+            var url = $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={_steamApiKey}&steamid={steamId}&include_appinfo=true&include_played_free_games=1&format=json";
 
             // Log the URL for debugging
             Console.WriteLine($"Request URL: {url}");
@@ -49,15 +60,6 @@ namespace GameVaultApp.Endpoints.steam
             return result?.Response?.Games ?? new List<OwnedGame>();
         }
 
-        // Method to extract the numeric Steam ID from OpenID URL
-        private string ExtractSteamId(string steamIdUrl)
-        {
-            if (string.IsNullOrEmpty(steamIdUrl))
-                return string.Empty;
-
-            // Extract the Steam ID part after the last '/' in the OpenID URL
-            return steamIdUrl.Substring(steamIdUrl.LastIndexOf('/') + 1);
-        }
 
         // Fetch user Friend list 
         public async Task<List<Friend>> GetSteamProfileFriendListAsync(string steamId)
@@ -91,6 +93,157 @@ namespace GameVaultApp.Endpoints.steam
 
             return profileData?.Response?.Players ?? new List<SteamProfile>();
         }
+
+        public async Task<OwnedGame> GetGameDetailsAsync(string steamId, int appId)
+        {
+            var games = await GetOwnedGamesAsync(steamId);
+            return games.FirstOrDefault(g => g.AppId == appId);
+        }
+
+        public async Task<List<SteamAchievement>> GetGameAchievementsAsync(string steamId, int appId)
+        {
+            steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
+
+            var url = $"https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key={_steamApiKey}&steamid={steamId}&appid={appId}";
+
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode) return new List<SteamAchievement>();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<SteamAchievementResponse>(json);
+
+            return data?.Playerstats?.Achievements ?? new List<SteamAchievement>();
+        }
+
+        public async Task<SteamInventoryResponse> GetInventoryAsync(string steamId, int appId, int contextId)
+        {
+            steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
+
+            var url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count=5000";
+
+            // Log the URL for debugging
+            Console.WriteLine($"Request URL: {url}");
+
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Failed to fetch inventory. Status: {response.StatusCode}, Error: {error}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var inventory = JsonConvert.DeserializeObject<SteamInventoryResponse>(json);
+
+            return inventory;
+        }
+
+        public async Task<SteamInventoryResponse> GetFullInventoryAsync(string steamId, int appId, int contextId)
+        {
+            var allItems = new SteamInventoryResponse
+            {
+                Assets = new List<SteamInventoryItem>(),
+                Descriptions = new List<SteamItemDescription>()
+            };
+
+            string? lastAssetId = null;
+            bool moreItems = true;
+
+            while (moreItems)
+            {
+                var url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count=5000";
+                if (!string.IsNullOrEmpty(lastAssetId))
+                    url += $"&start_assetid={lastAssetId}";
+
+                var response = await _httpClient.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
+
+                var page = JsonConvert.DeserializeObject<SteamInventoryResponse>(json);
+                if (page == null) break;
+
+                allItems.Assets.AddRange(page.Assets);
+                allItems.Descriptions.AddRange(page.Descriptions);
+
+                moreItems = page.MoreItems;
+                lastAssetId = page.LastAssetId;
+            }
+
+            return allItems;
+        }
+
+    }
+
+    public class SteamInventoryResponse
+    {
+        [JsonProperty("assets")]
+        public List<SteamInventoryItem> Assets { get; set; }
+
+        [JsonProperty("descriptions")]
+        public List<SteamItemDescription> Descriptions { get; set; }
+
+        [JsonProperty("more_items")]
+        public bool MoreItems { get; set; }
+
+        [JsonProperty("last_assetid")]
+        public string LastAssetId { get; set; }
+
+        public class SteamInventoryItem
+        {
+
+            [JsonProperty("assetid")]
+            public string AssetId { get; set; }
+
+            [JsonProperty("classid")]
+            public string ClassId { get; set; }
+
+            [JsonProperty("instanceid")]
+            public string InstanceId { get; set; }
+
+            [JsonProperty("amount")]
+            public string Amount { get; set; }
+        }
+
+        public class SteamItemDescription
+        {
+            [JsonProperty("classid")]
+            public string ClassId { get; set; }
+
+            [JsonProperty("instanceid")]
+            public string InstanceId { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("market_name")]
+            public string MarketName { get; set; }
+
+            [JsonProperty("icon_url")]
+            public string IconUrl { get; set; }
+
+            [JsonProperty("marketable")]
+            public int Marketable { get; set; }
+
+            public string GetFullIconUrl() =>
+                $"https://steamcommunity-a.akamaihd.net/economy/image/{IconUrl}";
+        }
+    }
+
+    public class SteamAchievementResponse
+    {
+        public PlayerStats Playerstats { get; set; }
+    }
+
+    public class PlayerStats
+    {
+        public string SteamID { get; set; }
+        public string GameName { get; set; }
+        public List<SteamAchievement> Achievements { get; set; }
+    }
+
+    public class SteamAchievement
+    {
+        public string Name { get; set; }
+        public string Apiname { get; set; }
+        public bool Achieved { get; set; }
     }
 
     public class OwnedGamesResponse
