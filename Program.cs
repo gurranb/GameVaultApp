@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using GameVaultApp.Data;
 using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.Endpoints.steam;
+using GameVaultApp.Models;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("GameVaultAppContextConnection") ?? throw new InvalidOperationException("Connection string 'GameVaultAppContextConnection' not found.");
 
@@ -20,6 +21,8 @@ builder.Services.AddAuthentication()
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient<SteamService>();
 
+// secret.json for steam api key
+builder.Services.Configure<ApiSettings>(builder.Configuration);
 
 var app = builder.Build();
 

@@ -4,17 +4,64 @@
     ViewData["Title"] = "Home page";
 }
 
-<h2>Steam Profile</h2>
 
-@* @if (Model.SteamProfile != null)
+@if (Model.RecentlyPlayedGames != null && Model.RecentlyPlayedGames.Any())
 {
-    <div>
-        <h3>@Model.SteamProfile.Personaname</h3>
-        <img src="@Model.SteamProfile.AvatarFull" alt="Steam Avatar" width="100" />
-        <p>Steam Profile URL: <a href="@Model.SteamProfile.Profileurl" target="_blank">@Model.SteamProfile.Profileurl</a></p>
+    <h3 class="mt-5 mb-4 text-center fw-bold">Recently Played Games</h3>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+        @foreach (var game in Model.RecentlyPlayedGames)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
+                    <div class="text-center p-3 bg-light rounded-top">
+                        <img src="@($"https://media.steampowered.com/steamcommunity/public/images/apps/{game.AppId}/{game.IconUrl}.jpg")"
+                             alt="@game.Name"
+                             class="img-fluid rounded"
+                             style="max-height: 100px;" />
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-semibold">
+                            <a asp-page="/GameDetails" asp-route-AppId="@game.AppId"
+                               asp-route-steamId="@Model.SteamProfile.SteamId" 
+                               class="text-decoration-none text-dark">
+                                @game.Name
+                            </a>
+                        </h5>
+                        <p class="card-text mb-1 text-muted small">⏱️ Played last 2 weeks: <strong>@(game.Playtime2Weeks / 60)</strong> hrs</p>
+                        <p class="card-text text-muted small">🎮 Total playtime: <strong>@(game.PlaytimeForever / 60)</strong> hrs</p>
+                    </div>
+                    <div class="card-footer bg-transparent text-center">
+                        <a href="https://store.steampowered.com/app/@game.AppId" target="_blank" class="btn btn-outline-primary btn-sm">
+                            View on Steam
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 }
 else
 {
-    <p>No Steam profile found or not linked.</p>
-} *@
+    <p class="text-muted text-center mt-4">No recently played games found or your Steam profile is private.</p>
+}
+<br />
+<form method="post" class="mb-4">
+    <input type="text" name="Query" value="@Model.Query" class="form-control" placeholder="Search games..." />
+</form>
+
+@if (Model.SteamApps != null && Model.SteamApps.Any())
+{
+    <ul class="list-group">
+        @foreach (var app in Model.SteamApps)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @app.Name
+                <form method="get" class="mb-4">
+                    <button type="submit" class="btn btn-primary mt-2">Add to list</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+

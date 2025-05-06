@@ -33,6 +33,7 @@ namespace GameVaultApp.Pages
 
             GameDetails = await _steamService.GetGameDetailsAsync(steamId, AppId);
             //Achievements = await _steamService.GetGameAchievementsAsync(steamId, AppId);
+
             Inventory = await _steamService.GetFullInventoryAsync(steamId, AppId, contextId: 2);
 
             // If the game details are not found, return a not-found response

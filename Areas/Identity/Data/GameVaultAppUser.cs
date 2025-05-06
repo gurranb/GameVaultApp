@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 
 namespace GameVaultApp.Areas.Identity.Data;
 
-// Add profile data for application users by adding properties to the GameVaultAppUser class
 public class GameVaultAppUser : IdentityUser
 {
     [PersonalData]
@@ -15,7 +14,7 @@ public class GameVaultAppUser : IdentityUser
     [PersonalData]
     public string LastName { get; set; }
 
-    public string SteamId { get; set; }
+    public string? SteamId { get; set; }
 
 }
 
