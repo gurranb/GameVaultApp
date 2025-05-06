@@ -94,6 +94,13 @@ namespace GameVaultApp.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage();
             }
 
+            // Clear the SteamId from the user if the removed login is Steam
+            if (loginProvider == "Steam")
+            {
+                user.SteamId = null;
+                await _userManager.UpdateAsync(user);
+            }
+
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "The external login was removed.";
             return RedirectToPage();
