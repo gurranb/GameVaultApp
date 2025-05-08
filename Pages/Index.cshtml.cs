@@ -1,29 +1,45 @@
 using GameVaultApp.Areas.Identity.Data;
+using GameVaultApp.Data;
 using GameVaultApp.Endpoints.steam;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GameVaultApp.Pages;
+
 
 public class IndexModel : PageModel
 {
     private readonly UserManager<GameVaultAppUser> _userManager;
     private readonly SteamService _steamService;
+    private readonly GameVaultAppContext _context;
+
+
     public SteamProfile SteamProfile { get; set; }
     public GameVaultAppUser MyUser { get; set; }
-    public List<SteamApp> SteamApps { get; set; } = new();
-    [BindProperty(SupportsGet = true)]
-    public string Query { get; set; }
-
+    public List<SteamSearchApp> SteamSearchGames { get; set; } = new();
     public List<OwnedGame> RecentlyPlayedGames { get; set; }
 
-    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService)
+
+    [BindProperty]
+    public string AppId { get; set; }
+
+    [BindProperty]
+    public string Name { get; set; }
+
+    [BindProperty]
+    public string Query { get; set; }
+
+
+    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context)
     {
         _userManager = userManager;
         _steamService = steamService;
+        _context = context;
     }
 
 
@@ -43,12 +59,7 @@ public class IndexModel : PageModel
         if (string.IsNullOrWhiteSpace(Query))
             return Page();
 
-        var allApps = await _steamService.SearchGamesAsync(Query);
-
-        SteamApps = allApps
-            .Where(a => !string.IsNullOrWhiteSpace(a.Name) && a.Name.Contains(Query, StringComparison.OrdinalIgnoreCase))
-        .Take(50)
-        .ToList();
+        SteamSearchGames = await _steamService.SearchAppsAsync(Query);
 
         return Page();
     }
@@ -60,8 +71,41 @@ public class IndexModel : PageModel
         {
             MyUser = user;
             SteamProfile = await _steamService.GetSteamProfileAsync(user.SteamId);
-            RecentlyPlayedGames = await _steamService.GetRecentlyPlayedGamesAsync(user.SteamId, 2);
+
+            if (SteamProfile != null)
+            {
+                RecentlyPlayedGames = await _steamService.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<OwnedGame>();
+            }
+            else
+            {
+                RecentlyPlayedGames = new List<OwnedGame>();
+            }             
+        }
+        else
+        {
+            SteamProfile = null;
+            RecentlyPlayedGames = new List<OwnedGame>();
         }
     }
-    
+
+    public async Task<IActionResult> OnPostAddToWishlistAsync()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null || string.IsNullOrWhiteSpace(AppId))
+            return RedirectToPage(); // Or show error
+
+        _context.WishlistItems.Add(new Models.WishlistItem
+        {
+            UserId = user.Id,
+            AppId = AppId,
+            Name = Name,
+            DateAdded = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = $"{Name} added to wishlist!";
+        return RedirectToPage();
+    }
+
 }

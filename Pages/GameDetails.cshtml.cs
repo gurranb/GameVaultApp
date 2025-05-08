@@ -1,9 +1,11 @@
 using GameVaultApp.Endpoints.steam;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace GameVaultApp.Pages
 {
+    [Authorize]
     public class GameDetailsModel : PageModel
     {
         private readonly SteamService _steamService;

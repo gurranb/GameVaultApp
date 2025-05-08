@@ -1,0 +1,15 @@
+﻿using GameVaultApp.Areas.Identity.Data;
+
+namespace GameVaultApp.Models
+{
+    public class WishlistItem
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public string AppId { get; set; }
+        public string Name { get; set; }
+        public DateTime DateAdded { get; set; }
+
+        public GameVaultAppUser User { get; set; }
+    }
+}

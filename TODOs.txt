@@ -1,0 +1,19 @@
+﻿TODO:
+
+HIGH PRIO
+- Create a list of wishlist games
+- add delete func from wishlist
+- Make CI/CD to run app before pushing to main
+- Fix index page if user is not logged in
+
+MID PRIO
+- change api url for game icons ?
+
+LOW PRIO
+- Change logo design of recently played games
+- fix table design of ownedGames on profilePage
+
+
+IDEAS:
+- Implement news for games? https://github.com/Revadike/InternalSteamWebAPI/wiki/Get-App-Details
+- 

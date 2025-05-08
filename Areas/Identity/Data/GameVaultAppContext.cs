@@ -1,4 +1,5 @@
 ﻿using GameVaultApp.Areas.Identity.Data;
+using GameVaultApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,8 @@ public class GameVaultAppContext : IdentityDbContext<GameVaultAppUser>
         : base(options)
     {
     }
+
+    public DbSet<WishlistItem> WishlistItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
