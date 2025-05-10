@@ -14,6 +14,7 @@ public class GameVaultAppContext : IdentityDbContext<GameVaultAppUser>
     }
 
     public DbSet<WishlistItem> WishlistItems { get; set; }
+    public DbSet<CachedOwnedGames> CachedOwnedGames { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
