@@ -78,6 +78,8 @@ else
                 <form method="post" asp-page-handler="AddToWishlist" class="d-flex align-items-center">
                     <input type="hidden" name="AppId" value="@app.AppId" />
                     <input type="hidden" name="Name" value="@app.Name" />
+                            <input type="hidden" name="LogoUrl" value="@app.LogoUrl" />
+                            <input type="hidden" name="IconUrl" value="@app.IconUrl" />
                         <button type="submit" class="btn btn-success btn-sm">Add to GameVault</button>
                 </form>
                 </div>
