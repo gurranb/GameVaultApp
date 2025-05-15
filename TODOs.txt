@@ -3,7 +3,7 @@
 HIGH PRIO
 - Create a list of wishlist games
 - add delete func from wishlist
-- Make CI/CD to run app before pushing to main
+- Make CI/CD pipeline to run app before pushing to main
 - Fix index page if user is not logged in
 
 MID PRIO
