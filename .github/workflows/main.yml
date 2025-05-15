@@ -12,7 +12,7 @@ jobs:
   build-app:
     runs-on: ubuntu-latest
     env:
-      MY_PATH: GameVaultApp/GameVaultApp.csproj
+      MY_PATH: GameVaultApp.csproj
 
     steps:
     - name: Checkout code
