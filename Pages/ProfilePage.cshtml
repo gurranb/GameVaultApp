@@ -32,6 +32,19 @@
     <section class="mb-5">
         <h2 class="mb-4">Owned Games</h2>
 
+        @if (Model.LastUpdated != default(DateTime))
+        {
+            <div class="text-muted small mb-3">
+                Last updated: @Model.LastUpdated.ToString("f")
+            </div>
+        }
+
+        <form method="post" asp-page-handler="Refresh" class="mb-3">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </form>
+
         @if (Model.OwnedGames != null && Model.OwnedGames.Any() && Model.SteamProfile != null)
         {
             <p>Total games: @Model.TotalOwnedGames</p>

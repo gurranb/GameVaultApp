@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Packaging.Rules;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GameVaultApp.Pages;
@@ -33,6 +34,10 @@ public class IndexModel : PageModel
 
     [BindProperty]
     public string Query { get; set; }
+    [BindProperty]
+    public string LogoUrl { get; set; }
+    [BindProperty]
+    public string IconUrl { get; set; }
 
 
     public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context)
@@ -93,12 +98,14 @@ public class IndexModel : PageModel
         var user = await _userManager.GetUserAsync(User);
         if (user == null || string.IsNullOrWhiteSpace(AppId))
             return RedirectToPage(); // Or show error
-
+        
         _context.WishlistItems.Add(new Models.WishlistItem
         {
             UserId = user.Id,
             AppId = AppId,
             Name = Name,
+            LogoUrl = LogoUrl,
+            IconUrl = IconUrl,
             DateAdded = DateTime.UtcNow
         });
 

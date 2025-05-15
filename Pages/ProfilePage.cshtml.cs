@@ -17,6 +17,7 @@ namespace GameVaultApp.Pages
         public List<SteamProfile> FriendProfiles { get; set; } = new List<SteamProfile>();
         public List<OwnedGame> OwnedGames { get; set; } = new();
         public int TotalOwnedGames { get; set; }
+        public DateTime LastUpdated { get; set; }
 
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
@@ -38,9 +39,9 @@ namespace GameVaultApp.Pages
             {
                 SteamProfile = await _steamService.GetSteamProfileAsync(user.SteamId);
 
-                var allGames = await _steamService.GetOwnedGamesAsync(user.SteamId) ?? new List<OwnedGame>();
-
+                var (allGames, lastUpdated) = await _steamService.GetOwnedGamesAsync(user.SteamId);
                 TotalOwnedGames = allGames.Count;
+                LastUpdated = lastUpdated;
 
                 if (!string.IsNullOrEmpty(SortByPlaytime))
                 {
@@ -81,6 +82,17 @@ namespace GameVaultApp.Pages
                 //}
             }
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostRefreshAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null && !string.IsNullOrEmpty(user.SteamId))
+            {
+                await _steamService.InvalidateOwnedGamesCacheAsync(user.SteamId);
+            }
+
+            return RedirectToPage();
         }
 
     }

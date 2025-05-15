@@ -1,4 +1,6 @@
-﻿using GameVaultApp.Models;
+﻿using GameVaultApp.Data;
+using GameVaultApp.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
@@ -9,15 +11,16 @@ namespace GameVaultApp.Endpoints.steam
     public class SteamService
     {
         private readonly HttpClient _httpClient;
-
+        private readonly GameVaultAppContext _context;
         private readonly string _steamApiKey;
         private readonly ILogger<SteamService> _logger;
 
-        public SteamService(IOptions<ApiSettings> options, HttpClient httpClient, ILogger<SteamService> logger )
+        public SteamService(IOptions<ApiSettings> options, HttpClient httpClient, ILogger<SteamService> logger, GameVaultAppContext context )
         {
             _httpClient = httpClient;
             _steamApiKey = options.Value.SteamApiKey;
             _logger = logger;
+            _context = context;
         }
         // Method to extract the numeric Steam ID from OpenID URL
         private string ExtractSteamId(string steamIdUrl)
@@ -46,10 +49,20 @@ namespace GameVaultApp.Endpoints.steam
             }
         }
 
-        public async Task<List<OwnedGame>> GetOwnedGamesAsync(string steamId)
+        public async Task<(List<OwnedGame>Games, DateTime LastUpdated)> GetOwnedGamesAsync(string steamId)
         {
-            steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
+            steamId = ExtractSteamId(steamId);
+            var cacheEntry = await _context.CachedOwnedGames
+                .FirstOrDefaultAsync(x => x.SteamId == steamId);
 
+            // use cached data if available and not older than 1 hour
+            if (cacheEntry != null && cacheEntry.LastUpdated > DateTime.Now.AddHours(-1))
+            {
+                var cachedGames = JsonConvert.DeserializeObject<List<OwnedGame>>(cacheEntry.JsonData);
+                return (cachedGames, cacheEntry.LastUpdated);
+            }
+
+            // Fetch from Steam API if not cached or cache is outdated
             var url = $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={_steamApiKey}&steamid={steamId}&include_appinfo=true&include_played_free_games=1&format=json";
 
             var response = await _httpClient.GetAsync(url);
@@ -62,8 +75,44 @@ namespace GameVaultApp.Endpoints.steam
 
             var json = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<OwnedGamesResponse>(json);
+            var games = result?.Response?.Games ?? new List<OwnedGame>();
+            var serializedGames = JsonConvert.SerializeObject(games);
+            var time = DateTime.Now;
 
-            return result?.Response?.Games ?? new List<OwnedGame>();
+            // Save/update cache
+            if (cacheEntry != null)
+            {
+                cacheEntry.JsonData = serializedGames;
+                cacheEntry.LastUpdated = time;
+                _context.Update(cacheEntry);
+            }
+            else
+            {
+                _context.Add(new CachedOwnedGames
+                {
+                    SteamId = steamId,
+                    JsonData = serializedGames,
+                    LastUpdated = time
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return (games, time);
+        }
+
+        // Manually refresh ownedGame
+        public async Task InvalidateOwnedGamesCacheAsync(string steamId)
+        {
+            steamId = ExtractSteamId(steamId);
+            var entry = await _context.CachedOwnedGames
+                .FirstOrDefaultAsync(x => x.SteamId == steamId);
+
+            if (entry != null)
+            {
+                _context.Remove(entry);
+                await _context.SaveChangesAsync();
+            }
         }
 
 
@@ -102,7 +151,7 @@ namespace GameVaultApp.Endpoints.steam
 
         public async Task<OwnedGame> GetGameDetailsAsync(string steamId, int appId)
         {
-            var games = await GetOwnedGamesAsync(steamId);
+            var (games, _) = await GetOwnedGamesAsync(steamId);
             return games.FirstOrDefault(g => g.AppId == appId);
         }
 
@@ -235,36 +284,6 @@ namespace GameVaultApp.Endpoints.steam
         public string LogoUrl { get; set; }
     }
 
-    //public class SteamAppListWrapper
-    //{
-    //    [JsonProperty("applist")]
-    //    public SteamAppList Applist { get; set; }
-    //}
-
-    //public class SteamAppList
-    //{
-    //    [JsonProperty("apps")]
-    //    public List<SteamAppEntry> Apps { get; set; }
-    //}
-
-    //public class SteamAppEntry
-    //{
-    //    [JsonProperty("appid")]
-    //    public int AppId { get; set; }
-
-    //    [JsonProperty("name")]
-    //    public string Name { get; set; }
-    //}
-
-    //public class SteamAppDetailWrapper
-    //{
-    //    [JsonProperty("success")]
-    //    public bool Success { get; set; }
-
-    //    [JsonProperty("data")]
-    //    public SteamAppDetail Data { get; set; }
-    //}
-
     public class SteamAppDetail
     {
         [JsonProperty("type")]
@@ -277,16 +296,6 @@ namespace GameVaultApp.Endpoints.steam
         public string HeaderImage { get; set; }
     }
 
-    //public class SteamAppListResponse
-    //{
-    //    public SteamAppList Applist { get; set; }
-    //}
-
-    //public class SteamAppList
-    //{
-    //    public List<SteamApp> Apps { get; set; }
-
-    //}
 
     public class SteamApp
     {
@@ -377,8 +386,8 @@ namespace GameVaultApp.Endpoints.steam
 
     public class OwnedGamesData
     {
-        [JsonProperty("game_count")]
-        public int GameCount { get; set; }
+        //[JsonProperty("game_count")]
+        //public int GameCount { get; set; }
 
         [JsonProperty("games")]
         public List<OwnedGame> Games { get; set; }
