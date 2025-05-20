@@ -60,6 +60,13 @@ else
 {
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
+else if (TempData["ErrorMessage"] != null)
+{
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+else if (TempData["InfoMessage"] != null){
+        <div class="alert alert-info">@TempData["InfoMessage"]</div>
+}
 
 @if (Model.SteamSearchGames != null && Model.SteamSearchGames.Any())
 {
