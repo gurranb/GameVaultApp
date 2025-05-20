@@ -155,20 +155,20 @@ namespace GameVaultApp.Endpoints.steam
             return games.FirstOrDefault(g => g.AppId == appId);
         }
 
-        public async Task<List<SteamAchievement>> GetGameAchievementsAsync(string steamId, int appId)
-        {
-            steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
+        //public async Task<List<SteamAchievement>> GetGameAchievementsAsync(string steamId, int appId)
+        //{
+        //    steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
 
-            var url = $"https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key={_steamApiKey}&steamid={steamId}&appid={appId}";
+        //    var url = $"https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key={_steamApiKey}&steamid={steamId}&appid={appId}";
 
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode) return new List<SteamAchievement>();
+        //    var response = await _httpClient.GetAsync(url);
+        //    if (!response.IsSuccessStatusCode) return new List<SteamAchievement>();
 
-            var json = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<SteamAchievementResponse>(json);
+        //    var json = await response.Content.ReadAsStringAsync();
+        //    var data = JsonConvert.DeserializeObject<SteamAchievementResponse>(json);
 
-            return data?.Playerstats?.Achievements ?? new List<SteamAchievement>();
-        }
+        //    return data?.Playerstats?.Achievements ?? new List<SteamAchievement>();
+        //}
 
         public async Task<SteamInventoryResponse> GetInventoryAsync(string steamId, int appId, int contextId)
         {
@@ -266,6 +266,8 @@ namespace GameVaultApp.Endpoints.steam
                 return new List<SteamSearchApp>();
             }
         }
+
+
 
     }
 

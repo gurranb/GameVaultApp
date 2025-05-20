@@ -1,11 +1,15 @@
 ﻿# TODO List
 
 ## HIGH PRIO
-- [ ] Create a list of wishlist games
+- [X] Create a list of wishlist games
 - [X] Add delete function from wishlist
 - [X] Make CI/CD to run app before pushing to main
-- [ ] Fix index page if user is not logged in
+- [X] Fix index page if user is not logged in
 - [X] Cache ownedGames in DB
+- [X] make a check if Game is already on wishlist
+- [X] make a check if Game is already owned when adding to wishlist
+- [ ] Display price in searchList
+- [ ] Display some gameinfo in Gamedetails
 
 ## MID PRIO
 - [ ] Change API URL for game icons?

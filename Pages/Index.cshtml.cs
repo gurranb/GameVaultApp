@@ -1,6 +1,7 @@
 using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.Data;
 using GameVaultApp.Endpoints.steam;
+using GameVaultApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging.Rules;
+using System.Text.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GameVaultApp.Pages;
@@ -98,7 +100,27 @@ public class IndexModel : PageModel
         var user = await _userManager.GetUserAsync(User);
         if (user == null || string.IsNullOrWhiteSpace(AppId))
             return RedirectToPage(); // Or show error
-        
+
+        // check if game is already owned
+        var ownedGamesResult = await _steamService.GetOwnedGamesAsync(user.SteamId);
+
+        if (ownedGamesResult.Games != null && ownedGamesResult.Games.Any(g => g.AppId.ToString() == AppId))
+        {
+            TempData["InfoMessage"] = $"{Name} is already owned.";
+            return RedirectToPage();
+        }
+
+
+        // Check if game is already in wishlist
+        bool alreadySaved = await _context.WishlistItems
+        .AnyAsync(w => w.UserId == user.Id && w.AppId == AppId);
+
+        if (alreadySaved)
+        {
+            TempData["ErrorMessage"] = $"{Name} is already in your wishlist.";
+            return RedirectToPage();
+        }
+
         _context.WishlistItems.Add(new Models.WishlistItem
         {
             UserId = user.Id,
