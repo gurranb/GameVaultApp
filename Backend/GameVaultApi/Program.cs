@@ -2,6 +2,7 @@ using GameVaultApi.DAL.Interfaces;
 using GameVaultApi.DAL.Repositories;
 using GameVaultApi.Data;
 using GameVaultApi.Models;
+using GameVaultApi.Services.Data;
 using GameVaultApi.Services.Steam;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
@@ -28,6 +29,8 @@ builder.Services.AddHttpClient<SteamService>();
 // Repositories
 builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
 
+// Services
+builder.Services.AddScoped<WishlistService>();
 
 builder.Services.AddAuthentication("Identity.Application")
     .AddCookie("Identity.Application");
