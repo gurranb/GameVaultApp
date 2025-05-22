@@ -11,7 +11,7 @@ jobs:
     name: Build backend API (.NET)
     runs-on: ubuntu-latest
     env:
-      MY_PATH: backend/GameVaultApi/GameVaultApi.csproj
+      MY_PATH: Backend/GameVaultApi/GameVaultApi.csproj
 
     steps:
       - name: Checkout code
@@ -32,7 +32,7 @@ jobs:
     name: Build Frontend (.NET)
     runs-on: ubuntu-latest
     env:
-      MY_PATH: frontend/GameVaultApp.csproj
+      MY_PATH: Frontend/GameVaultApp.csproj
 
     steps:
       - name: Checkout code
