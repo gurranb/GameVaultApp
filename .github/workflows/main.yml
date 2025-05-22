@@ -1,0 +1,50 @@
+
+name: Build GameVault app
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend:
+    name: Build backend API (.NET)
+    runs-on: ubuntu-latest
+    env:
+      MY_PATH: backend/GameVaultApi/GameVaultApi.csproj
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore $MY_PATH
+
+      - name: Build Backend
+        run: dotnet build $MY_PATH --no-restore --configuration Release
+
+  frontend:
+    name: Build Frontend (.NET)
+    runs-on: ubuntu-latest
+    env:
+      MY_PATH: frontend/GameVaultApp.csproj
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore $MY_PATH
+
+      - name: Build Frontend
+        run: dotnet build $MY_PATH --no-restore --configuration Release
