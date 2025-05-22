@@ -40,7 +40,7 @@ namespace GameVaultApi.Services.Steam
                 var url = $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={_steamApiKey}&steamids={steamId}";
 
                 var response = await _httpClient.GetStringAsync(url);
-                var profileData = JsonConvert.DeserializeObject<SteamProfileResponse>(response);
+                var profileData = JsonConvert.DeserializeObject<Models.Steam.SteamProfileResponse>(response);
 
                 return profileData?.Response?.Players?.FirstOrDefault();
             }
@@ -54,6 +54,7 @@ namespace GameVaultApi.Services.Steam
         public async Task<(List<Models.Steam.OwnedGames> Games, DateTime LastUpdated)> GetOwnedGamesAsync(string steamId)
         {
             steamId = ExtractSteamId(steamId);
+
             var cacheEntry = await _context.CachedOwnedGames
                 .FirstOrDefaultAsync(x => x.SteamId == steamId);
 
@@ -364,24 +365,24 @@ namespace GameVaultApi.Services.Steam
         }
     }
 
-    public class SteamAchievementResponse
-    {
-        public PlayerStats Playerstats { get; set; }
-    }
+    //public class SteamAchievementResponse
+    //{
+    //    public PlayerStats Playerstats { get; set; }
+    //}
 
-    public class PlayerStats
-    {
-        public string SteamID { get; set; }
-        public string GameName { get; set; }
-        public List<SteamAchievement> Achievements { get; set; }
-    }
+    //public class PlayerStats
+    //{
+    //    public string SteamID { get; set; }
+    //    public string GameName { get; set; }
+    //    public List<SteamAchievement> Achievements { get; set; }
+    //}
 
-    public class SteamAchievement
-    {
-        public string Name { get; set; }
-        public string Apiname { get; set; }
-        public bool Achieved { get; set; }
-    }
+    //public class SteamAchievement
+    //{
+    //    public string Name { get; set; }
+    //    public string Apiname { get; set; }
+    //    public bool Achieved { get; set; }
+    //}
 
     //public class OwnedGamesResponse
     //{
@@ -397,14 +398,14 @@ namespace GameVaultApi.Services.Steam
     //    public List<Models.Steam.OwnedGames> Games { get; set; }
     //}
 
-    public class SteamProfileResponse
-    {
-        public SteamProfileResponseData? Response { get; set; }
-    }
+    //public class SteamProfileResponse
+    //{
+    //    public SteamProfileResponseData? Response { get; set; }
+    //}
 
-    public class SteamProfileResponseData
-    {
-        public List<Models.Steam.Profile>? Players { get; set; }
-    }
+    //public class SteamProfileResponseData
+    //{
+    //    public List<Models.Steam.Profile>? Players { get; set; }
+    //}
 
 }

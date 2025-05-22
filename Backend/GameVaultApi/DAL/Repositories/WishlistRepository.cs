@@ -13,17 +13,17 @@ namespace GameVaultApi.DAL.Repositories
         {
             _context = context;
         }
+        public async Task AddToWishlistAsync(WishlistItem item)
+        {
+            await _context.WishlistItems.AddAsync(item);
+            await _context.SaveChangesAsync();
+        }
 
         public async Task<List<WishlistItem>> GetWishlistByUserIdAsync(string userId)
         {
             return await _context.WishlistItems
                 .Where(w => w.UserId == userId)
                 .ToListAsync();
-        }
-        public async Task AddToWishlistAsync(WishlistItem item)
-        {
-            await _context.WishlistItems.AddAsync(item);
-            await _context.SaveChangesAsync();
         }
         public async Task<bool> RemoveFromWishlistAsync(string userId, int itemId)
         {
