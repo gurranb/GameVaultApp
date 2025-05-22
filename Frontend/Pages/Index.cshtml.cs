@@ -2,6 +2,7 @@ using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.Data;
 using GameVaultApp.Endpoints.steam;
 using GameVaultApp.Models;
+using GameVaultApp.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +21,13 @@ public class IndexModel : PageModel
     private readonly UserManager<GameVaultAppUser> _userManager;
     private readonly SteamService _steamService;
     private readonly GameVaultAppContext _context;
+    private readonly SteamApiClient _steamApiClient;
 
 
-    public SteamProfile SteamProfile { get; set; }
+    public Models.Steam.SteamProfile SteamProfile { get; set; }
     public GameVaultAppUser MyUser { get; set; }
     public List<SteamSearchApp> SteamSearchGames { get; set; } = new();
-    public List<OwnedGame> RecentlyPlayedGames { get; set; }
+    public List<Models.Steam.OwnedGames> RecentlyPlayedGames { get; set; }
 
 
     [BindProperty]
@@ -42,11 +44,12 @@ public class IndexModel : PageModel
     public string IconUrl { get; set; }
 
 
-    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context)
+    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context, SteamApiClient steamApiClient)
     {
         _userManager = userManager;
         _steamService = steamService;
         _context = context;
+        _steamApiClient = steamApiClient;
     }
 
 
@@ -77,21 +80,22 @@ public class IndexModel : PageModel
         if (user != null && !string.IsNullOrEmpty(user.SteamId))
         {
             MyUser = user;
-            SteamProfile = await _steamService.GetSteamProfileAsync(user.SteamId);
+            SteamProfile = await _steamApiClient.GetSteamProfileAsync(user.SteamId);
 
             if (SteamProfile != null)
             {
-                RecentlyPlayedGames = await _steamService.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<OwnedGame>();
+                //RecentlyPlayedGames = await _steamService.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<OwnedGame>();
+                RecentlyPlayedGames = await _steamApiClient.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<Models.Steam.OwnedGames>();
             }
             else
             {
-                RecentlyPlayedGames = new List<OwnedGame>();
+                RecentlyPlayedGames = new List<Models.Steam.OwnedGames>();
             }             
         }
         else
         {
             SteamProfile = null;
-            RecentlyPlayedGames = new List<OwnedGame>();
+            RecentlyPlayedGames = new List<Models.Steam.OwnedGames>();
         }
     }
 

@@ -12,9 +12,9 @@ namespace GameVaultApp.Pages
     {
         private readonly UserManager<GameVaultAppUser> _userManager;
         private readonly SteamService _steamService;
-        public SteamProfile SteamProfile { get; set; }
+        public Models.Steam.SteamProfile SteamProfile { get; set; }
         public GameVaultAppUser MyUser { get; set; }
-        public List<SteamProfile> FriendProfiles { get; set; } = new List<SteamProfile>();
+        public List<Models.Steam.SteamProfile> FriendProfiles { get; set; } = new List<Models.Steam.SteamProfile>();
         public List<OwnedGame> OwnedGames { get; set; } = new();
         public int TotalOwnedGames { get; set; }
         public DateTime LastUpdated { get; set; }

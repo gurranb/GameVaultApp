@@ -1,6 +1,7 @@
 ﻿# TODO List
 
 ## HIGH PRIO
+- [ ] Move Api stuff to new Web Api
 - [X] Create a list of wishlist games
 - [X] Add delete function from wishlist
 - [X] Make CI/CD to run app before pushing to main
@@ -8,13 +9,12 @@
 - [X] Cache ownedGames in DB
 - [X] make a check if Game is already on wishlist
 - [X] make a check if Game is already owned when adding to wishlist
-- [ ] Display price in searchList
-- [ ] Display some gameinfo in Gamedetails
-
 ## MID PRIO
 - [ ] Change API URL for game icons?
 
 ## LOW PRIO
+- [ ] Display price in searchList
+- [ ] Display some gameinfo in Gamedetails
 - [ ] Change logo design of recently played games
 - [ ] Fix table design of ownedGames on ProfilePage
 

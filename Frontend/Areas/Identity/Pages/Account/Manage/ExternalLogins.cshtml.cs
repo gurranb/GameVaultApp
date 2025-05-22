@@ -138,6 +138,7 @@ namespace GameVaultApp.Areas.Identity.Pages.Account.Manage
                 // The Steam ID will be in the ProviderKey
                 var steamId = info.ProviderKey;
 
+                steamId = ExtractSteamId(steamId);
                 // Save the Steam ID to the user's profile
                 user.SteamId = steamId;
 
@@ -162,6 +163,14 @@ namespace GameVaultApp.Areas.Identity.Pages.Account.Manage
 
             StatusMessage = "The external login was added.";
             return RedirectToPage();
+        }
+
+        private string ExtractSteamId(string steamIdUrl)
+        {
+            if (string.IsNullOrEmpty(steamIdUrl))
+                return string.Empty;
+
+            return steamIdUrl.Substring(steamIdUrl.LastIndexOf('/') + 1);
         }
     }
 }

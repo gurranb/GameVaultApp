@@ -6,6 +6,7 @@ using GameVaultApp.Endpoints.steam;
 using GameVaultApp.Models;
 using GameVaultApp.DAL.Interfaces;
 using GameVaultApp.DAL.Repositories;
+using GameVaultApp.Services.Api;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("GameVaultAppContextConnection") ?? throw new InvalidOperationException("Connection string 'GameVaultAppContextConnection' not found.");
 
@@ -27,6 +28,12 @@ builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
 
 // secret.json for steam api key
 builder.Services.Configure<ApiSettings>(builder.Configuration);
+
+
+builder.Services.AddHttpClient<SteamApiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:44311/"); // Or your API base URL
+});
 
 var app = builder.Build();
 
