@@ -1,17 +1,10 @@
 using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.Data;
 using GameVaultApp.Endpoints.steam;
-using GameVaultApp.Models;
 using GameVaultApp.Services.Api;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-using Microsoft.EntityFrameworkCore;
-using NuGet.Packaging.Rules;
-using System.Text.Json;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GameVaultApp.Pages;
 
@@ -22,6 +15,7 @@ public class IndexModel : PageModel
     private readonly SteamService _steamService;
     private readonly GameVaultAppContext _context;
     private readonly SteamApiClient _steamApiClient;
+    private readonly WishlistApiClient _wishlistApiClient;
 
 
     public Models.Steam.SteamProfile SteamProfile { get; set; }
@@ -44,12 +38,13 @@ public class IndexModel : PageModel
     public string IconUrl { get; set; }
 
 
-    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context, SteamApiClient steamApiClient)
+    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context, SteamApiClient steamApiClient, WishlistApiClient wishlistApiClient)
     {
         _userManager = userManager;
         _steamService = steamService;
         _context = context;
         _steamApiClient = steamApiClient;
+        _wishlistApiClient = wishlistApiClient;
     }
 
 
@@ -80,17 +75,20 @@ public class IndexModel : PageModel
         if (user != null && !string.IsNullOrEmpty(user.SteamId))
         {
             MyUser = user;
-            SteamProfile = await _steamApiClient.GetSteamProfileAsync(user.SteamId);
+            if (SteamProfile != null)
+            {
+                SteamProfile = await _steamApiClient.GetSteamProfileAsync(user.SteamId);
+
+            }
 
             if (SteamProfile != null)
             {
-                //RecentlyPlayedGames = await _steamService.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<OwnedGame>();
                 RecentlyPlayedGames = await _steamApiClient.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<Models.Steam.OwnedGames>();
             }
             else
             {
                 RecentlyPlayedGames = new List<Models.Steam.OwnedGames>();
-            }             
+            }
         }
         else
         {
@@ -105,8 +103,14 @@ public class IndexModel : PageModel
         if (user == null || string.IsNullOrWhiteSpace(AppId))
             return RedirectToPage(); // Or show error
 
+        if (!int.TryParse(AppId, out int parsedAppId))
+        {
+            TempData["ErrorMessage"] = "Invalid game ID";
+            return RedirectToPage();
+        }
+
         // check if game is already owned
-        var ownedGamesResult = await _steamService.GetOwnedGamesAsync(user.SteamId);
+        var ownedGamesResult = await _steamApiClient.GetOwnedGamesOnSteam(user.SteamId);
 
         if (ownedGamesResult.Games != null && ownedGamesResult.Games.Any(g => g.AppId.ToString() == AppId))
         {
@@ -114,30 +118,17 @@ public class IndexModel : PageModel
             return RedirectToPage();
         }
 
+        var success = await _wishlistApiClient.AddToWishlistAsync(user.Id, parsedAppId, Name, LogoUrl, IconUrl);
 
-        // Check if game is already in wishlist
-        bool alreadySaved = await _context.WishlistItems
-        .AnyAsync(w => w.UserId == user.Id && w.AppId == AppId);
-
-        if (alreadySaved)
+        if (success)
+        {
+            TempData["SuccessMessage"] = $"{Name} added to wishlist!";
+        }
+        else
         {
             TempData["ErrorMessage"] = $"{Name} is already in your wishlist.";
-            return RedirectToPage();
         }
 
-        _context.WishlistItems.Add(new Models.WishlistItem
-        {
-            UserId = user.Id,
-            AppId = AppId,
-            Name = Name,
-            LogoUrl = LogoUrl,
-            IconUrl = IconUrl,
-            DateAdded = DateTime.UtcNow
-        });
-
-        await _context.SaveChangesAsync();
-
-        TempData["SuccessMessage"] = $"{Name} added to wishlist!";
         return RedirectToPage();
     }
 

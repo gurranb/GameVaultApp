@@ -50,93 +50,93 @@ namespace GameVaultApp.Endpoints.steam
             }
         }
 
-        public async Task<(List<OwnedGame>Games, DateTime LastUpdated)> GetOwnedGamesAsync(string steamId)
-        {
-            steamId = ExtractSteamId(steamId);
-            var cacheEntry = await _context.CachedOwnedGames
-                .FirstOrDefaultAsync(x => x.SteamId == steamId);
+        //public async Task<(List<OwnedGame>Games, DateTime LastUpdated)> GetOwnedGamesAsync(string steamId)
+        //{
+        //    steamId = ExtractSteamId(steamId);
+        //    var cacheEntry = await _context.CachedOwnedGames
+        //        .FirstOrDefaultAsync(x => x.SteamId == steamId);
 
-            // use cached data if available and not older than 1 hour
-            if (cacheEntry != null && cacheEntry.LastUpdated > DateTime.Now.AddHours(-1))
-            {
-                var cachedGames = JsonConvert.DeserializeObject<List<OwnedGame>>(cacheEntry.JsonData);
-                return (cachedGames, cacheEntry.LastUpdated);
-            }
+        //    // use cached data if available and not older than 1 hour
+        //    if (cacheEntry != null && cacheEntry.LastUpdated > DateTime.Now.AddHours(-1))
+        //    {
+        //        var cachedGames = JsonConvert.DeserializeObject<List<OwnedGame>>(cacheEntry.JsonData);
+        //        return (cachedGames, cacheEntry.LastUpdated);
+        //    }
 
-            // Fetch from Steam API if not cached or cache is outdated
-            var url = $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={_steamApiKey}&steamid={steamId}&include_appinfo=true&include_played_free_games=1&format=json";
+        //    // Fetch from Steam API if not cached or cache is outdated
+        //    var url = $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={_steamApiKey}&steamid={steamId}&include_appinfo=true&include_played_free_games=1&format=json";
 
-            var response = await _httpClient.GetAsync(url);
+        //    var response = await _httpClient.GetAsync(url);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Failed to get owned games. Status: {response.StatusCode}, Content: {content}");
-            }
+        //    if (!response.IsSuccessStatusCode)
+        //    {
+        //        var content = await response.Content.ReadAsStringAsync();
+        //        throw new HttpRequestException($"Failed to get owned games. Status: {response.StatusCode}, Content: {content}");
+        //    }
 
-            var json = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<OwnedGamesResponse>(json);
-            var games = result?.Response?.Games ?? new List<OwnedGame>();
-            var serializedGames = JsonConvert.SerializeObject(games);
-            var time = DateTime.Now;
+        //    var json = await response.Content.ReadAsStringAsync();
+        //    var result = JsonConvert.DeserializeObject<OwnedGamesResponse>(json);
+        //    var games = result?.Response?.Games ?? new List<OwnedGame>();
+        //    var serializedGames = JsonConvert.SerializeObject(games);
+        //    var time = DateTime.Now;
 
-            // Save/update cache
-            if (cacheEntry != null)
-            {
-                cacheEntry.JsonData = serializedGames;
-                cacheEntry.LastUpdated = time;
-                _context.Update(cacheEntry);
-            }
-            else
-            {
-                _context.Add(new CachedOwnedGames
-                {
-                    SteamId = steamId,
-                    JsonData = serializedGames,
-                    LastUpdated = time
-                });
-            }
+        //    // Save/update cache
+        //    if (cacheEntry != null)
+        //    {
+        //        cacheEntry.JsonData = serializedGames;
+        //        cacheEntry.LastUpdated = time;
+        //        _context.Update(cacheEntry);
+        //    }
+        //    else
+        //    {
+        //        _context.Add(new CachedOwnedGames
+        //        {
+        //            SteamId = steamId,
+        //            JsonData = serializedGames,
+        //            LastUpdated = time
+        //        });
+        //    }
 
-            await _context.SaveChangesAsync();
+        //    await _context.SaveChangesAsync();
 
-            return (games, time);
-        }
+        //    return (games, time);
+        //}
 
         // Manually refresh ownedGame
-        public async Task InvalidateOwnedGamesCacheAsync(string steamId)
-        {
-            steamId = ExtractSteamId(steamId);
-            var entry = await _context.CachedOwnedGames
-                .FirstOrDefaultAsync(x => x.SteamId == steamId);
+        //public async Task InvalidateOwnedGamesCacheAsync(string steamId)
+        //{
+        //    steamId = ExtractSteamId(steamId);
+        //    var entry = await _context.CachedOwnedGames
+        //        .FirstOrDefaultAsync(x => x.SteamId == steamId);
 
-            if (entry != null)
-            {
-                _context.Remove(entry);
-                await _context.SaveChangesAsync();
-            }
-        }
+        //    if (entry != null)
+        //    {
+        //        _context.Remove(entry);
+        //        await _context.SaveChangesAsync();
+        //    }
+        //}
 
 
         // Fetch user Friend list 
-        public async Task<List<Friend>> GetSteamProfileFriendListAsync(string steamId)
-        {
-            steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
+        //public async Task<List<Friend>> GetSteamProfileFriendListAsync(string steamId)
+        //{
+        //    steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
 
-            var url = $"https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={_steamApiKey}&steamid={steamId}&relationship=friend";
+        //    var url = $"https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={_steamApiKey}&steamid={steamId}&relationship=friend";
 
-            var response = await _httpClient.GetAsync(url);
+        //    var response = await _httpClient.GetAsync(url);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Failed to get friend list. Status code: {response.StatusCode}");
-            }
+        //    if (!response.IsSuccessStatusCode)
+        //    {
+        //        var content = await response.Content.ReadAsStringAsync();
+        //        throw new HttpRequestException($"Failed to get friend list. Status code: {response.StatusCode}");
+        //    }
 
-            var jsonResult = await response.Content.ReadAsStringAsync();
-            var friendList = JsonConvert.DeserializeObject<FriendListResponse>(jsonResult);
+        //    var jsonResult = await response.Content.ReadAsStringAsync();
+        //    var friendList = JsonConvert.DeserializeObject<FriendListResponse>(jsonResult);
 
-            return friendList?.friendslist?.friends ?? new List<Friend>();
-        }
+        //    return friendList?.friendslist?.friends ?? new List<Friend>();
+        //}
 
         public async Task<List<Models.Steam.SteamProfile>> GetProfilesBySteamIdsAsync(List<string> steamIds)
         {
@@ -150,11 +150,11 @@ namespace GameVaultApp.Endpoints.steam
             return profileData?.Response?.Players ?? new List<Models.Steam.SteamProfile>();
         }
 
-        public async Task<OwnedGame> GetGameDetailsAsync(string steamId, int appId)
-        {
-            var (games, _) = await GetOwnedGamesAsync(steamId);
-            return games.FirstOrDefault(g => g.AppId == appId);
-        }
+        //public async Task<OwnedGame> GetGameDetailsAsync(string steamId, int appId)
+        //{
+        //    var (games, _) = await GetOwnedGamesAsync(steamId);
+        //    return games.FirstOrDefault(g => g.AppId == appId);
+        //}
 
         //public async Task<List<SteamAchievement>> GetGameAchievementsAsync(string steamId, int appId)
         //{
@@ -275,88 +275,88 @@ namespace GameVaultApp.Endpoints.steam
     public class SteamSearchApp
     {
         [JsonProperty("appid")]
-        public string AppId { get; set; }
+        public string? AppId { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("icon")]
-        public string IconUrl { get; set; }
+        public string? IconUrl { get; set; }
 
         [JsonProperty("logo")]
-        public string LogoUrl { get; set; }
+        public string? LogoUrl { get; set; }
     }
 
     public class SteamAppDetail
     {
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("header_image")]
-        public string HeaderImage { get; set; }
+        public string? HeaderImage { get; set; }
     }
 
 
     public class SteamApp
     {
-        public int AppId { get; set; }
-        public string Name { get; set; }
-        public string ImgLogoUrl { get; set; } 
+        public int? AppId { get; set; }
+        public string? Name { get; set; }
+        public string? ImgLogoUrl { get; set; } 
     }
 
 
     public class SteamInventoryResponse
     {
         [JsonProperty("assets")]
-        public List<SteamInventoryItem> Assets { get; set; }
+        public List<SteamInventoryItem>? Assets { get; set; }
 
         [JsonProperty("descriptions")]
-        public List<SteamItemDescription> Descriptions { get; set; }
+        public List<SteamItemDescription>? Descriptions { get; set; }
 
         [JsonProperty("more_items")]
         public bool MoreItems { get; set; }
 
         [JsonProperty("last_assetid")]
-        public string LastAssetId { get; set; }
+        public string? LastAssetId { get; set; }
 
         public class SteamInventoryItem
         {
 
             [JsonProperty("assetid")]
-            public string AssetId { get; set; }
+            public string? AssetId { get; set; }
 
             [JsonProperty("classid")]
-            public string ClassId { get; set; }
+            public string? ClassId { get; set; }
 
             [JsonProperty("instanceid")]
-            public string InstanceId { get; set; }
+            public string? InstanceId { get; set; }
 
             [JsonProperty("amount")]
-            public string Amount { get; set; }
+            public string? Amount { get; set; }
         }
 
         public class SteamItemDescription
         {
             [JsonProperty("classid")]
-            public string ClassId { get; set; }
+            public string? ClassId { get; set; }
 
             [JsonProperty("instanceid")]
-            public string InstanceId { get; set; }
+            public string? InstanceId { get; set; }
 
             [JsonProperty("name")]
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
             [JsonProperty("market_name")]
-            public string MarketName { get; set; }
+            public string? MarketName { get; set; }
 
             [JsonProperty("icon_url")]
-            public string IconUrl { get; set; }
+            public string? IconUrl { get; set; }
 
             [JsonProperty("marketable")]
-            public int Marketable { get; set; }
+            public int? Marketable { get; set; }
 
             public string GetFullIconUrl() =>
                 $"https://steamcommunity-a.akamaihd.net/economy/image/{IconUrl}";
@@ -365,21 +365,21 @@ namespace GameVaultApp.Endpoints.steam
 
     public class SteamAchievementResponse
     {
-        public PlayerStats Playerstats { get; set; }
+        public PlayerStats? Playerstats { get; set; }
     }
 
     public class PlayerStats
     {
-        public string SteamID { get; set; }
-        public string GameName { get; set; }
-        public List<SteamAchievement> Achievements { get; set; }
+        public string? SteamID { get; set; }
+        public string? GameName { get; set; }
+        public List<SteamAchievement>? Achievements { get; set; }
     }
 
     public class SteamAchievement
     {
-        public string Name { get; set; }
-        public string Apiname { get; set; }
-        public bool Achieved { get; set; }
+        public string? Name { get; set; }
+        public string? Apiname { get; set; }
+        public bool? Achieved { get; set; }
     }
 
     public class OwnedGamesResponse
@@ -426,29 +426,29 @@ namespace GameVaultApp.Endpoints.steam
     // Model classes to deserialize the Steam API response
     public class SteamProfileResponse
     {
-        public SteamProfileResponseData Response { get; set; }
+        public SteamProfileResponseData? Response { get; set; }
     }
 
     public class SteamProfileResponseData
     {
-        public List<Models.Steam.SteamProfile> Players { get; set; }
+        public List<Models.Steam.SteamProfile>? Players { get; set; }
     }
 
-    public class FriendListResponse
-    {
-        public FriendListData friendslist { get; set; }
-    }
+    //public class FriendListResponse
+    //{
+    //    public FriendListData? friendslist { get; set; }
+    //}
 
-    public class FriendListData
-    {
-        public List<Friend> friends { get; set; }
-    }
+    //public class FriendListData
+    //{
+    //    public List<Friend>? friends { get; set; }
+    //}
 
-    public class Friend
-    {
-        public string steamId { get; set; }
-        public long friend_since { get; set; }
-    }
+    //public class Friend
+    //{
+    //    public string steamId { get; set; }
+    //    public long friend_since { get; set; }
+    //}
 
     //public class SteamProfile
     //{

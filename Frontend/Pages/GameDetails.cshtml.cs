@@ -33,7 +33,7 @@ namespace GameVaultApp.Pages
                 return BadRequest("Missing Steam ID.");
             }
 
-            GameDetails = await _steamService.GetGameDetailsAsync(steamId, AppId);
+            //GameDetails = await _steamService.GetGameDetailsAsync(steamId, AppId);
             //Achievements = await _steamService.GetGameAchievementsAsync(steamId, AppId);
 
             Inventory = await _steamService.GetFullInventoryAsync(steamId, AppId, contextId: 2);

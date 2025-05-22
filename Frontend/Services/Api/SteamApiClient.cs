@@ -1,4 +1,6 @@
 ﻿using GameVaultApp.Endpoints.steam;
+using GameVaultApp.Models;
+using GameVaultApp.Models.Steam;
 
 namespace GameVaultApp.Services.Api
 {
@@ -25,9 +27,28 @@ namespace GameVaultApp.Services.Api
                 url += $"?count={count.Value}";
             }
 
-            var recentlyPlayedGames = await _httpClient.GetFromJsonAsync<List<Models.Steam.OwnedGames>>(url);
-                return recentlyPlayedGames ?? new List<Models.Steam.OwnedGames>();
+            var response = await _httpClient.GetFromJsonAsync<List<Models.Steam.OwnedGames>>(url);
+                return response ?? new List<Models.Steam.OwnedGames>();
         }
+
+        public async Task<OwnedGamesResult> GetOwnedGamesOnSteam(string steamId)
+        {
+            var url = $"api/steam/games/owned-games/{steamId}";
+            var response = await _httpClient.GetFromJsonAsync<OwnedGamesResult>(url);
+            return response ?? new OwnedGamesResult();
+        }
+
+        public async Task<OwnedGamesResult> RefreshOwnedGames(string steamId)
+        {
+            var url = $"api/steam/games/owned-games-update/{steamId}";
+            var response = await _httpClient.PostAsync(url, null);
+
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<OwnedGamesResult>();
+            return result ?? new OwnedGamesResult();
+        }
+        
 
     }
 }

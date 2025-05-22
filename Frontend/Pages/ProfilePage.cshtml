@@ -146,26 +146,4 @@
         }
     </section>
 
-    <!-- Friend List -->
-    <section>
-        <h2 class="mb-4">Friend List</h2>
-
-        @if (Model.FriendProfiles.Any())
-        {
-            <ul class="list-group">
-                @foreach (var friend in Model.FriendProfiles)
-                {
-                    <li class="list-group-item d-flex align-items-center">
-                        <img src="@friend.Avatar" width="32" height="32" class="rounded-circle me-2" alt="Avatar" />
-                        <a href="@friend.Profileurl" target="_blank">@friend.Personaname</a>
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <div class="alert alert-secondary">No friends found or failed to load friend list.</div>
-        }
-    </section>
-
 </div>

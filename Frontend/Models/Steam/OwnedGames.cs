@@ -1,4 +1,6 @@
-﻿namespace GameVaultApp.Models.Steam
+﻿using Newtonsoft.Json;
+
+namespace GameVaultApp.Models.Steam
 {
     public class OwnedGames
     {
@@ -15,4 +17,22 @@
             $"https://media.steampowered.com/steamcommunity/public/images/apps/{AppId}/{LogoUrl}.jpg";
 
     }
+
+    public class OwnedGamesResult
+    {
+        public DateTime LastUpdated { get; set; }
+        public int TotalGames { get; set; }
+        public List <OwnedGames> Games { get; set; } = new();
+    }
+
+    //public class CachedOwnedGames
+    //{
+    //    public int Id { get; set; }
+
+    //    public string SteamId { get; set; }
+
+    //    public string JsonData { get; set; }
+
+    //    public DateTime LastUpdated { get; set; }
+    //}
 }

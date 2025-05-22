@@ -34,6 +34,10 @@ builder.Services.AddHttpClient<SteamApiClient>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:44311/"); // Or your API base URL
 });
+builder.Services.AddHttpClient<WishlistApiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:44311/");
+});
 
 var app = builder.Build();
 

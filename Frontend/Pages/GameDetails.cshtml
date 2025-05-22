@@ -14,32 +14,7 @@
                 <img src="@Model.GameDetails.GetIconUrl()" class="img-fluid mb-3" alt="Game Logo" />
             </div>
             <div class="col-md-9">
-                <p><strong>Playtime:</strong> @(Model.GameDetails.PlaytimeForever / 60) hrs</p>
-
-                <h4>Achievements</h4>
-                @if (Model.Achievements != null && Model.Achievements.Any())
-                {
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                        @foreach (var achievement in Model.Achievements)
-                        {
-                            <div class="col">
-                                <div class="card h-100 border @(achievement.Achieved ? "border-success" : "border-secondary")">
-                                    <div class="card-body">
-                                        <h5 class="card-title">@achievement.Name</h5>
-                                        <p class="card-text">@achievement.Apiname</p>
-                                        <span class="badge @(achievement.Achieved ? "bg-success" : "bg-secondary")">
-                                            @(achievement.Achieved ? "Unlocked" : "Locked")
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p>No achievements found or this game does not support them.</p>
-                }
+                <p><strong>Playtime:</strong> @(Model.GameDetails.PlaytimeForever / 60) hrs</p>             
 
                 @if (Model.Inventory?.Descriptions?.Any() == true)
                 {

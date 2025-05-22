@@ -1,7 +1,11 @@
 ﻿# TODO List
 
 ## HIGH PRIO
-- [ ] Move Api stuff to new Web Api
+- [X] Create api for backend
+- [ ] move gamedetails to backend
+- [ ] move searchApp func to backend
+- [ ] refactor
+- [ ] remove unused code
 - [X] Create a list of wishlist games
 - [X] Add delete function from wishlist
 - [X] Make CI/CD to run app before pushing to main

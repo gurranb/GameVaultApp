@@ -2,6 +2,7 @@ using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.DAL.Interfaces;
 using GameVaultApp.Data;
 using GameVaultApp.Models;
+using GameVaultApp.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,17 @@ namespace GameVaultApp.Pages
     {
         private readonly IWishlistRepository _wishlistRepository;
         private readonly UserManager<GameVaultAppUser> _userManager;
+        private readonly WishlistApiClient _wishlistApiClient;
 
         public List<WishlistItem> Wishlist { get; set; } = new();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public int TotalWishlistItems { get; set; }
-        public WishlistModel(IWishlistRepository wishlistRepository, UserManager<GameVaultAppUser> userManager)
+        public WishlistModel(IWishlistRepository wishlistRepository, UserManager<GameVaultAppUser> userManager, WishlistApiClient wishlistApiClient)
         {
             _wishlistRepository = wishlistRepository;
             _userManager = userManager;
+            _wishlistApiClient = wishlistApiClient;
         }
 
         public async Task OnGetAsync(int pageNumber = 1, string? sortByName = null)
@@ -34,7 +37,7 @@ namespace GameVaultApp.Pages
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return;
 
-            var wishlist = await _wishlistRepository.GetWishlistByUserIdAsync(user.Id);
+            var wishlist = await _wishlistApiClient.GetWishlistAsync(user.Id);
 
             // Sorting
             wishlist = sortByName switch
@@ -59,7 +62,7 @@ namespace GameVaultApp.Pages
 
             if (user != null)
             {
-                var result = await _wishlistRepository.RemoveFromWishlistAsync(user.Id, id);
+                var result = await _wishlistApiClient.RemoveFromWishlistAsync(user.Id, id);
 
                 if (result)
                 {
