@@ -7,6 +7,7 @@
 - [ ] refactor
 - [ ] remove unused code
 - [ ] check workflow
+- [ ] test
 - [X] Create a list of wishlist games
 - [X] Add delete function from wishlist
 - [X] Make CI/CD to run app before pushing to main
