@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameVaultApi", "GameVaultApi.csproj", "{CCCB8A99-3B23-4581-A9D7-4309028F981C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCCB8A99-3B23-4581-A9D7-4309028F981C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCCB8A99-3B23-4581-A9D7-4309028F981C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCCB8A99-3B23-4581-A9D7-4309028F981C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCCB8A99-3B23-4581-A9D7-4309028F981C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {854D403E-9316-42E2-91CE-F84556CA40D0}
+	EndGlobalSection
+EndGlobal
