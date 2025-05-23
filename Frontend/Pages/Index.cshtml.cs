@@ -74,7 +74,7 @@ public class IndexModel : PageModel
 
             if (SteamProfile != null)
             {
-                RecentlyPlayedGames = await _steamApiClient.GetRecentlyPlayedGamesAsync(user.SteamId, 2) ?? new List<Models.Steam.OwnedGames>();
+                RecentlyPlayedGames = await _steamApiClient.GetRecentlyPlayedGamesAsync(user.SteamId, 4) ?? new List<Models.Steam.OwnedGames>();
             }
             else
             {
