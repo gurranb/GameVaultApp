@@ -28,6 +28,11 @@ jobs:
       - name: Build Backend
         run: dotnet build $MY_PATH --no-restore --configuration Release
 
+      - name: Count lines of code in Backend
+        run: |
+          sudo apt-get update && sudo apt-get install -y cloc
+          cloc Backend/GameVaultApi
+
   frontend:
     name: Build Frontend (.NET)
     runs-on: ubuntu-latest
@@ -48,3 +53,8 @@ jobs:
 
       - name: Build Frontend
         run: dotnet build $MY_PATH --no-restore --configuration Release
+
+      - name: Count lines of code in Frontend
+        run: |
+          sudo apt-get update && sudo apt-get install -y cloc
+          cloc Frontend
