@@ -19,34 +19,52 @@ namespace GameVaultApi.Controllers
         [HttpGet("profile/{steamId}")]
         public async Task<IActionResult> GetSteamProfile(string steamId)
         {
-            var profile = await _steamService.GetSteamProfileAsync(steamId);
-
-            if (profile == null)
+            try
             {
-                return NotFound($"No Steam profile found for Steam ID: {steamId}");
-            }
+                var profile = await _steamService.GetSteamProfileAsync(steamId);
+                if (profile == null)
+                    return NotFound(new { error = $"No Steam profile found for Steam ID: {steamId}" });
 
-            return Ok(profile);
+                return Ok(profile);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // GET: recently played games by SteamId
         [HttpGet("games/recently-played/{steamId}")]
-        public async Task<ActionResult<List<Models.Steam.OwnedGames>>> GetRecentlyPlayedGames(string steamId, [FromQuery] int? count)
+        public async Task<IActionResult> GetRecentlyPlayedGames(string steamId, [FromQuery] int? count)
         {
-            var recentlyPlayedgames = await _steamService.GetRecentlyPlayedGamesAsync(steamId, count);
-            if (recentlyPlayedgames == null)
+            try
             {
-                return NotFound($"No recently games was found for Steam ID: {steamId}");
+                var games = await _steamService.GetRecentlyPlayedGamesAsync(steamId, count);
+                if (games == null)
+                    return NotFound(new { error = $"No recently played games found for Steam ID: {steamId}" });
+
+                return Ok(games);
             }
-            return Ok(recentlyPlayedgames);
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         //GET: Owned Games
         [HttpGet("games/owned-games/{steamId}")]
-        public async Task<IActionResult> GetOwnedGamesOnSteam(string steamId)
+        public async Task<IActionResult> GetOwnedGames(string steamId)
         {
             if (string.IsNullOrWhiteSpace(steamId))
-                return BadRequest("Steam ID is required.");
+                return BadRequest(new { error = "Steam ID is required." });
 
             try
             {
@@ -61,24 +79,28 @@ namespace GameVaultApi.Controllers
             catch (HttpRequestException ex)
             {
                 return StatusCode(503, new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
         //POST: update Owned Games manually
         [HttpPost("games/owned-games-update/{steamId}")]
-        public async Task<IActionResult> InvalidateOwnedGamesCache(string steamId)
+        public async Task<IActionResult> RefreshOwnedGamesCache(string steamId)
         {
             if (string.IsNullOrWhiteSpace(steamId))
-                return BadRequest("Steam ID is required");
-
-            await _steamService.InvalidateOwnedGamesCacheAsync(steamId);
+                return BadRequest(new { error = "Steam ID is required." });
 
             try
             {
+                await _steamService.InvalidateOwnedGamesCacheAsync(steamId);
                 var (ownedGames, lastUpdated) = await _steamService.GetOwnedGamesAsync(steamId);
+
                 return Ok(new
                 {
-                    Message = "Cache refreshed success!",
+                    message = "Cache refreshed successfully!",
                     LastUpdated = lastUpdated,
                     TotalGames = ownedGames.Count,
                     Games = ownedGames
@@ -88,57 +110,80 @@ namespace GameVaultApi.Controllers
             {
                 return StatusCode(503, new { error = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         //GET: gamedetails
-        [HttpGet("games/game-details")]
-        public async Task<ActionResult<OwnedGames>> GetGameDetails(string steamId, int appId)
+        [HttpGet("games/details")]
+        public async Task<IActionResult> GetGameDetails([FromQuery] string steamId, [FromQuery] int appId)
         {
-            var game = await _steamService.GetGameDetailsAsync(steamId, appId);
-
-            if (game == null)
+            try
             {
-                return BadRequest("Game not found for this user");
-            }
+                var game = await _steamService.GetGameDetailsAsync(steamId, appId);
+                if (game == null)
+                    return NotFound(new { error = "Game not found for this user." });
 
-            return Ok(game);
+                return Ok(game);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         //GET: inventory items for games
         [HttpGet("games/inventory")]
-        public async Task<IActionResult> GetInventory(string steamId, int appId, int contextId = 2)
+        public async Task<IActionResult> GetInventory([FromQuery] string steamId, [FromQuery] int appId, [FromQuery] int contextId = 2)
         {
             if (string.IsNullOrWhiteSpace(steamId))
-                return BadRequest("Missing Steam ID.");
+                return BadRequest(new { error = "Steam ID is required." });
 
             try
             {
                 var inventory = await _steamService.GetInventoryAsync(steamId, appId, contextId);
 
                 if (inventory == null || (inventory.Assets?.Count == 0 && inventory.Descriptions?.Count == 0))
-                    return NotFound("Inventory is empty or could not be retrieved.");
+                    return NotFound(new { error = "Inventory is empty or could not be retrieved." });
 
                 return Ok(inventory);
             }
             catch (HttpRequestException ex)
             {
-                return StatusCode(502, $"Steam API error: {ex.Message}");
+                return StatusCode(503, new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Server error: {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
         //GET: search steam apps
         [HttpGet("search-apps")]
-        public async Task<ActionResult<List<Models.Steam.SearchApp>>> SearchApps([FromQuery] string query)
+        public async Task<IActionResult> SearchApps([FromQuery] string query)
         {
             if (string.IsNullOrWhiteSpace(query))
-                return BadRequest("Query cannot be empty.");
+                return BadRequest(new { error = "Query cannot be empty." });
 
-            var results = await _steamService.SearchAppsAsync(query);
-            return Ok(results);
+            try
+            {
+                var results = await _steamService.SearchAppsAsync(query);
+                return Ok(results);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
     }
 }

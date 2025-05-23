@@ -7,96 +7,106 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    
+    <div class="container py-4">
 
-@if (Model.RecentlyPlayedGames != null && Model.RecentlyPlayedGames.Any())
-{
-    <h3 class="mt-5 mb-4 text-center fw-bold">Recently Played Games</h3>
-
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-        @foreach (var game in Model.RecentlyPlayedGames)
+        <!-- Recently Played -->
+        @if (Model.RecentlyPlayedGames != null && Model.RecentlyPlayedGames.Any())
         {
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="text-center p-3 bg-light rounded-top">
-                        <img src="@($"https://media.steampowered.com/steamcommunity/public/images/apps/{game.AppId}/{game.IconUrl}.jpg")"
-                             alt="@game.Name"
-                             class="img-fluid rounded"
-                             style="height: 120px;"  />
+            <h3 class="mb-4 text-center fw-bold">Recently Played Games</h3>
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                @foreach (var game in Model.RecentlyPlayedGames)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="text-center p-2 bg-light rounded-top">
+                                <img src="@($"https://media.steampowered.com/steamcommunity/public/images/apps/{game.AppId}/{game.IconUrl}.jpg")"
+                                     alt="@game.Name"
+                                     class="img-fluid rounded"
+                                     style="height: 80px;" />
+                            </div>
+                            <div class="card-body text-center p-2">
+                                <h6 class="card-title fw-semibold mb-1 text-truncate">
+                                    <a asp-page="/GameDetails" asp-route-AppId="@game.AppId"
+                                       asp-route-steamId="@Model.SteamProfile.SteamId"
+                                       class="text-decoration-none text-dark">
+                                        @game.Name
+                                    </a>
+                                </h6>
+                                <p class="card-text text-muted small mb-1">⏱️ Last 2 weeks: <strong>@(game.Playtime2Weeks / 60)</strong> hrs</p>
+                                <p class="card-text text-muted small">🎮 Total: <strong>@(game.PlaytimeForever / 60)</strong> hrs</p>
+                            </div>
+                            <div class="card-footer bg-transparent text-center p-2">
+                                <a href="https://store.steampowered.com/app/@game.AppId" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    View on Steam
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-semibold">
-                            <a asp-page="/GameDetails" asp-route-AppId="@game.AppId"
-                               asp-route-steamId="@Model.SteamProfile.SteamId" 
-                               class="text-decoration-none text-dark">
-                                @game.Name
-                            </a>
-                        </h5>
-                        <p class="card-text mb-1 text-muted small">⏱️ Played last 2 weeks: <strong>@(game.Playtime2Weeks / 60)</strong> hrs</p>
-                        <p class="card-text text-muted small">🎮 Total playtime: <strong>@(game.PlaytimeForever / 60)</strong> hrs</p>
-                    </div>
-                    <div class="card-footer bg-transparent text-center">
-                        <a href="https://store.steampowered.com/app/@game.AppId" target="_blank" class="btn btn-outline-primary btn-sm">
-                            View on Steam
-                        </a>
-                    </div>
-                </div>
+                }
             </div>
+        }
+        else
+        {
+            <p class="text-muted text-center mt-4">No recently played games found or your Steam profile is private.</p>
+        }
+
+        <hr class="my-5" />
+
+        <!-- Game Search -->
+        <form method="post" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="Query" value="@Model.Query" class="form-control" placeholder="Search games..." />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+        <!-- Flash Messages -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        else if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        else if (TempData["InfoMessage"] != null)
+        {
+            <div class="alert alert-info">@TempData["InfoMessage"]</div>
+        }
+
+        <!-- Search Results -->
+        @if (Model.SteamSearchGames != null && Model.SteamSearchGames.Any())
+        {
+            <ul class="list-group">
+                @foreach (var app in Model.SteamSearchGames)
+                {
+                    <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
+                        <div class="d-flex align-items-center mb-2 mb-md-0">
+                            <img src="@app.IconUrl" alt="@app.Name Icon" class="me-3" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px;" />
+                            <strong>@app.Name</strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="@app.LogoUrl" alt="@app.Name Logo" class="d-none d-md-block" style="max-height: 32px;" />
+                            <a href="https://store.steampowered.com/app/@app.AppId" target="_blank" class="btn btn-outline-primary btn-sm">Steam</a>
+
+                            <form method="post" asp-page-handler="AddToWishlist" class="d-inline">
+                                <input type="hidden" name="AppId" value="@app.AppId" />
+                                <input type="hidden" name="Name" value="@app.Name" />
+                                <input type="hidden" name="LogoUrl" value="@app.LogoUrl" />
+                                <input type="hidden" name="IconUrl" value="@app.IconUrl" />
+                                <button type="submit" class="btn btn-success btn-sm">Add to GameVault</button>
+                            </form>
+                        </div>
+                    </li>
+                }
+            </ul>
         }
     </div>
 }
-else 
+else
 {
-    <p class="text-muted text-center mt-4">No recently played games found or your Steam profile is private.</p>
-}
-<br />
-
-<form method="post" class="mb-4">
-    <input type="text" name="Query" value="@Model.Query" class="form-control mb-2" placeholder="Search games..." />
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-else if (TempData["ErrorMessage"] != null)
-{
-        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-else if (TempData["InfoMessage"] != null){
-        <div class="alert alert-info">@TempData["InfoMessage"]</div>
-}
-
-@if (Model.SteamSearchGames != null && Model.SteamSearchGames.Any())
-{
-    <ul class="list-group">
-        @foreach (var app in Model.SteamSearchGames)
-        {
-            <li class="list-group-item d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <img src="@app.IconUrl" alt="@app.Name Icon" class="me-3" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px;" />
-                    <strong>@app.Name</strong>
-                </div>
-                <div class="d-flex align-items-center" style="gap: 10px;">
-                    <img src="@app.LogoUrl" alt="@app.Name Logo" class="me-3 d-none d-md-block"  />
-                    <a href="https://store.steampowered.com/app/@app.AppId" target="_blank" class="btn btn-primary btn-sm">View on steam</a>
-                
-                <form method="post" asp-page-handler="AddToWishlist" class="d-flex align-items-center">
-                    <input type="hidden" name="AppId" value="@app.AppId" />
-                    <input type="hidden" name="Name" value="@app.Name" />
-                            <input type="hidden" name="LogoUrl" value="@app.LogoUrl" />
-                            <input type="hidden" name="IconUrl" value="@app.IconUrl" />
-                        <button type="submit" class="btn btn-success btn-sm">Add to GameVault</button>
-                </form>
-                </div>
-            </li>
-        }
-    </ul>
-}
-}
-else{
-    <section class="vh-100 d-flex align-items-center justify-content-center">
+    <!-- Hero Section (Unauthenticated Users) -->
+    <section class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 150px);">
         <div class="text-center p-5 shadow rounded bg-white">
             <h1 class="display-4 mb-4">Welcome to GameVault</h1>
             <p class="lead mb-4">
