@@ -1,6 +1,5 @@
 using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.Data;
-using GameVaultApp.Endpoints.steam;
 using GameVaultApp.Services.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +11,13 @@ namespace GameVaultApp.Pages;
 public class IndexModel : PageModel
 {
     private readonly UserManager<GameVaultAppUser> _userManager;
-    private readonly SteamService _steamService;
-    private readonly GameVaultAppContext _context;
     private readonly SteamApiClient _steamApiClient;
     private readonly WishlistApiClient _wishlistApiClient;
 
 
     public Models.Steam.SteamProfile SteamProfile { get; set; }
     public GameVaultAppUser MyUser { get; set; }
-    public List<SteamSearchApp> SteamSearchGames { get; set; } = new();
+    public List<Models.Steam.SearchApp> SteamSearchGames { get; set; } = new();
     public List<Models.Steam.OwnedGames> RecentlyPlayedGames { get; set; }
 
 
@@ -38,11 +35,9 @@ public class IndexModel : PageModel
     public string IconUrl { get; set; }
 
 
-    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, GameVaultAppContext context, SteamApiClient steamApiClient, WishlistApiClient wishlistApiClient)
+    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamApiClient steamApiClient, WishlistApiClient wishlistApiClient)
     {
         _userManager = userManager;
-        _steamService = steamService;
-        _context = context;
         _steamApiClient = steamApiClient;
         _wishlistApiClient = wishlistApiClient;
     }
@@ -64,7 +59,7 @@ public class IndexModel : PageModel
         if (string.IsNullOrWhiteSpace(Query))
             return Page();
 
-        SteamSearchGames = await _steamService.SearchAppsAsync(Query);
+        SteamSearchGames = await _steamApiClient.SearchAppsAsync(Query);
 
         return Page();
     }
@@ -75,11 +70,7 @@ public class IndexModel : PageModel
         if (user != null && !string.IsNullOrEmpty(user.SteamId))
         {
             MyUser = user;
-            if (SteamProfile != null)
-            {
-                SteamProfile = await _steamApiClient.GetSteamProfileAsync(user.SteamId);
-
-            }
+            SteamProfile = await _steamApiClient.GetSteamProfileAsync(user.SteamId);
 
             if (SteamProfile != null)
             {
@@ -110,7 +101,7 @@ public class IndexModel : PageModel
         }
 
         // check if game is already owned
-        var ownedGamesResult = await _steamApiClient.GetOwnedGamesOnSteam(user.SteamId);
+        var ownedGamesResult = await _steamApiClient.GetOwnedGamesOnSteamAsync(user.SteamId);
 
         if (ownedGamesResult.Games != null && ownedGamesResult.Games.Any(g => g.AppId.ToString() == AppId))
         {

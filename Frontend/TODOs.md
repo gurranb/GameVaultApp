@@ -2,8 +2,10 @@
 
 ## HIGH PRIO
 - [X] Create api for backend
-- [ ] move gamedetails to backend
-- [ ] move searchApp func to backend
+- [X] move gamedetails to backend
+- [X] move searchApp steam func to backend
+- [ ] Add global game search func (add manually to ownedGames/wishlist)
+- [X] move GetInventory to backend
 - [ ] refactor
 - [ ] remove unused code
 - [ ] check workflow
