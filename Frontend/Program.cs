@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using GameVaultApp.Data;
 using GameVaultApp.Areas.Identity.Data;
-using GameVaultApp.Endpoints.steam;
 using GameVaultApp.Models;
 using GameVaultApp.DAL.Interfaces;
 using GameVaultApp.DAL.Repositories;
@@ -22,7 +21,6 @@ builder.Services.AddAuthentication()
     });
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddHttpClient<SteamService>();
 
 builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
 

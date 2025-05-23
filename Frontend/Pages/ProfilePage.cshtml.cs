@@ -1,5 +1,4 @@
 using GameVaultApp.Areas.Identity.Data;
-using GameVaultApp.Endpoints.steam;
 using GameVaultApp.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +11,6 @@ namespace GameVaultApp.Pages
     public class ProfilePageModel : PageModel
     {
         private readonly UserManager<GameVaultAppUser> _userManager;
-        private readonly SteamService _steamService;
         private readonly SteamApiClient _steamApiClient;
 
         public Models.Steam.SteamProfile SteamProfile { get; set; }
@@ -25,10 +23,9 @@ namespace GameVaultApp.Pages
         public int TotalPages { get; set; }
 
 
-        public ProfilePageModel(UserManager<GameVaultAppUser> userManager, SteamService steamService, SteamApiClient steamApiClient)
+        public ProfilePageModel(UserManager<GameVaultAppUser> userManager, SteamApiClient steamApiClient)
         {
             _userManager = userManager;
-            _steamService = steamService;
             _steamApiClient = steamApiClient;
         }
 
@@ -42,13 +39,7 @@ namespace GameVaultApp.Pages
             {
                 SteamProfile = await _steamApiClient.GetSteamProfileAsync(user.SteamId);
 
-                //var (allGames, lastUpdated) = await _steamService.GetOwnedGamesAsync(user.SteamId);
-                //var (allGames, lastUpdated) = await _steamApiClient.GetOwnedGamesOnSteam(user.SteamId);
-                //TotalOwnedGames = allGames.Count;
-
-                //LastUpdated = lastUpdated;
-
-                var result = await _steamApiClient.GetOwnedGamesOnSteam(user.SteamId);
+                var result = await _steamApiClient.GetOwnedGamesOnSteamAsync(user.SteamId);
                 var allGamesFromApi = result.Games;
                 var lastUpdated = result.LastUpdated;
 
@@ -95,7 +86,7 @@ namespace GameVaultApp.Pages
             var user = await _userManager.GetUserAsync(User);
             if (user != null && !string.IsNullOrEmpty(user.SteamId))
             {
-                await _steamApiClient.RefreshOwnedGames(user.SteamId);
+                await _steamApiClient.RefreshOwnedGamesAsync(user.SteamId);
             }
 
             return RedirectToPage();
