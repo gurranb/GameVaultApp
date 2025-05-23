@@ -1,4 +1,5 @@
-﻿using GameVaultApi.Services.Steam;
+﻿using GameVaultApi.Models.Steam;
+using GameVaultApi.Services.Steam;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameVaultApi.Controllers
@@ -89,6 +90,55 @@ namespace GameVaultApi.Controllers
             }
         }
 
+        //GET: gamedetails
+        [HttpGet("games/game-details")]
+        public async Task<ActionResult<OwnedGames>> GetGameDetails(string steamId, int appId)
+        {
+            var game = await _steamService.GetGameDetailsAsync(steamId, appId);
 
+            if (game == null)
+            {
+                return BadRequest("Game not found for this user");
+            }
+
+            return Ok(game);
+        }
+
+        //GET: inventory items for games
+        [HttpGet("games/inventory")]
+        public async Task<IActionResult> GetInventory(string steamId, int appId, int contextId = 2)
+        {
+            if (string.IsNullOrWhiteSpace(steamId))
+                return BadRequest("Missing Steam ID.");
+
+            try
+            {
+                var inventory = await _steamService.GetInventoryAsync(steamId, appId, contextId);
+
+                if (inventory == null || (inventory.Assets?.Count == 0 && inventory.Descriptions?.Count == 0))
+                    return NotFound("Inventory is empty or could not be retrieved.");
+
+                return Ok(inventory);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(502, $"Steam API error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Server error: {ex.Message}");
+            }
+        }
+
+        //GET: search steam apps
+        [HttpGet("search-apps")]
+        public async Task<ActionResult<List<Models.Steam.SearchApp>>> SearchApps([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query cannot be empty.");
+
+            var results = await _steamService.SearchAppsAsync(query);
+            return Ok(results);
+        }
     }
 }

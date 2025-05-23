@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Text.Json.Serialization;
-using static GameVaultApi.Services.Steam.SteamInventoryResponse;
+
 
 namespace GameVaultApi.Services.Steam
 {
@@ -118,89 +118,19 @@ namespace GameVaultApi.Services.Steam
             }
         }
 
-
-        // Fetch user Friend list 
-        //public async Task<List<Friend>> GetSteamProfileFriendListAsync(string steamId)
-        //{
-        //    steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
-
-        //    var url = $"https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={_steamApiKey}&steamid={steamId}&relationship=friend";
-
-        //    var response = await _httpClient.GetAsync(url);
-
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        var content = await response.Content.ReadAsStringAsync();
-        //        throw new HttpRequestException($"Failed to get friend list. Status code: {response.StatusCode}");
-        //    }
-
-        //    var jsonResult = await response.Content.ReadAsStringAsync();
-        //    var friendList = JsonConvert.DeserializeObject<FriendListResponse>(jsonResult);
-
-        //    return friendList?.friendslist?.friends ?? new List<Friend>();
-        //}
-
-        //public async Task<List<Models.Steam.Profile>> GetProfilesBySteamIdsAsync(List<string> steamIds)
-        //{
-
-        //    var idString = string.Join(",", steamIds);
-        //    var url = $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={_steamApiKey}&steamids={idString}";
-
-        //    var response = await _httpClient.GetStringAsync(url);
-        //    var profileData = JsonConvert.DeserializeObject<SteamProfileResponse>(response);
-
-        //    return profileData?.Response?.Players ?? new List<Models.Steam.Profile>();
-        //}
-
         public async Task<Models.Steam.OwnedGames> GetGameDetailsAsync(string steamId, int appId)
         {
             var (games, _) = await GetOwnedGamesAsync(steamId);
             return games.FirstOrDefault(g => g.AppId == appId);
         }
 
-        //public async Task<List<SteamAchievement>> GetGameAchievementsAsync(string steamId, int appId)
-        //{
-        //    steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
 
-        //    var url = $"https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key={_steamApiKey}&steamid={steamId}&appid={appId}";
-
-        //    var response = await _httpClient.GetAsync(url);
-        //    if (!response.IsSuccessStatusCode) return new List<SteamAchievement>();
-
-        //    var json = await response.Content.ReadAsStringAsync();
-        //    var data = JsonConvert.DeserializeObject<SteamAchievementResponse>(json);
-
-        //    return data?.Playerstats?.Achievements ?? new List<SteamAchievement>();
-        //}
-
-        public async Task<SteamInventoryResponse> GetInventoryAsync(string steamId, int appId, int contextId)
+        public async Task<Models.Steam.InventoryItems> GetInventoryAsync(string steamId, int appId, int contextId)
         {
-            steamId = ExtractSteamId(steamId); // Extract numeric Steam ID if it's a URL
-
-            var url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count=5000";
-
-            // Log the URL for debugging
-            Console.WriteLine($"Request URL: {url}");
-
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            var allItems = new Models.Steam.InventoryItems
             {
-                var error = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Failed to fetch inventory. Status: {response.StatusCode}, Error: {error}");
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            var inventory = JsonConvert.DeserializeObject<SteamInventoryResponse>(json);
-
-            return inventory;
-        }
-
-        public async Task<SteamInventoryResponse> GetFullInventoryAsync(string steamId, int appId, int contextId)
-        {
-            var allItems = new SteamInventoryResponse
-            {
-                Assets = new List<SteamInventoryItem>(),
-                Descriptions = new List<SteamItemDescription>()
+                Assets = new List<Models.Steam.InventoryItems.SteamInventoryItem>(),
+                Descriptions = new List<Models.Steam.InventoryItems.SteamItemDescription>()
             };
 
             string? lastAssetId = null;
@@ -219,11 +149,11 @@ namespace GameVaultApi.Services.Steam
                 }
                 var json = await response.Content.ReadAsStringAsync();
 
-                var page = JsonConvert.DeserializeObject<SteamInventoryResponse>(json);
+                var page = JsonConvert.DeserializeObject<Models.Steam.InventoryItems>(json);
                 if (page == null) break;
 
-                allItems.Assets.AddRange(page.Assets ?? new List<SteamInventoryItem>());
-                allItems.Descriptions.AddRange(page.Descriptions ?? new List<SteamItemDescription>());
+                allItems.Assets.AddRange(page.Assets ?? new List<Models.Steam.InventoryItems.SteamInventoryItem>());
+                allItems.Descriptions.AddRange(page.Descriptions ?? new List<Models.Steam.InventoryItems.SteamItemDescription>());
 
                 moreItems = page.MoreItems;
                 lastAssetId = page.LastAssetId;
@@ -251,7 +181,7 @@ namespace GameVaultApi.Services.Steam
         }
 
 
-        public async Task<List<SteamSearchApp>> SearchAppsAsync(string query)
+        public async Task<List<Models.Steam.SearchApp>> SearchAppsAsync(string query)
         {
             try
             {
@@ -259,153 +189,17 @@ namespace GameVaultApi.Services.Steam
                 var url = $"https://steamcommunity.com/actions/SearchApps/{encodedQuery}";
 
                 var response = await _httpClient.GetStringAsync(url);
-                var results = JsonConvert.DeserializeObject<List<SteamSearchApp>>(response);
+                var results = JsonConvert.DeserializeObject<List<Models.Steam.SearchApp>>(response);
 
-                return results ?? new List<SteamSearchApp>();
+                return results ?? new List<Models.Steam.SearchApp>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error searching Steam apps for query: {Query}", query);
-                return new List<SteamSearchApp>();
+                return new List<Models.Steam.SearchApp>();
             }
         }
 
-
-
     }
-
-    public class SteamSearchApp
-    {
-        [JsonPropertyName("appid")]
-        public string AppId { get; set; }
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("icon")]
-        public string IconUrl { get; set; }
-
-        [JsonPropertyName("logo")]
-        public string LogoUrl { get; set; }
-    }
-
-    public class SteamAppDetail
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; }
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("header_image")]
-        public string HeaderImage { get; set; }
-    }
-
-
-    public class SteamApp
-    {
-        public int AppId { get; set; }
-        public string Name { get; set; }
-        public string ImgLogoUrl { get; set; }
-    }
-
-
-    public class SteamInventoryResponse
-    {
-        [JsonPropertyName("assets")]
-        public List<SteamInventoryItem> Assets { get; set; }
-
-        [JsonPropertyName("descriptions")]
-        public List<SteamItemDescription> Descriptions { get; set; }
-
-        [JsonPropertyName("more_items")]
-        public bool MoreItems { get; set; }
-
-        [JsonPropertyName("last_assetid")]
-        public string LastAssetId { get; set; }
-
-        public class SteamInventoryItem
-        {
-
-            [JsonPropertyName("assetid")]
-            public string AssetId { get; set; }
-
-            [JsonPropertyName("classid")]
-            public string ClassId { get; set; }
-
-            [JsonPropertyName("instanceid")]
-            public string InstanceId { get; set; }
-
-            [JsonPropertyName("amount")]
-            public string Amount { get; set; }
-        }
-
-        public class SteamItemDescription
-        {
-            [JsonPropertyName("classid")]
-            public string ClassId { get; set; }
-
-            [JsonPropertyName("instanceid")]
-            public string InstanceId { get; set; }
-
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-
-            [JsonPropertyName("market_name")]
-            public string MarketName { get; set; }
-
-            [JsonPropertyName("icon_url")]
-            public string IconUrl { get; set; }
-
-            [JsonPropertyName("marketable")]
-            public int Marketable { get; set; }
-
-            public string GetFullIconUrl() =>
-                $"https://steamcommunity-a.akamaihd.net/economy/image/{IconUrl}";
-        }
-    }
-
-    //public class SteamAchievementResponse
-    //{
-    //    public PlayerStats Playerstats { get; set; }
-    //}
-
-    //public class PlayerStats
-    //{
-    //    public string SteamID { get; set; }
-    //    public string GameName { get; set; }
-    //    public List<SteamAchievement> Achievements { get; set; }
-    //}
-
-    //public class SteamAchievement
-    //{
-    //    public string Name { get; set; }
-    //    public string Apiname { get; set; }
-    //    public bool Achieved { get; set; }
-    //}
-
-    //public class OwnedGamesResponse
-    //{
-    //    public OwnedGamesData Response { get; set; }
-    //}
-
-    //public class OwnedGamesData
-    //{
-    //    //[JsonPropertyName("game_count")]
-    //    //public int GameCount { get; set; }
-
-    //    [JsonPropertyName("games")]
-    //    public List<Models.Steam.OwnedGames> Games { get; set; }
-    //}
-
-    //public class SteamProfileResponse
-    //{
-    //    public SteamProfileResponseData? Response { get; set; }
-    //}
-
-    //public class SteamProfileResponseData
-    //{
-    //    public List<Models.Steam.Profile>? Players { get; set; }
-    //}
 
 }
