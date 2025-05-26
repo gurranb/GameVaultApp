@@ -2,13 +2,14 @@
 
 ## HIGH PRIO
 - [X] Create api for backend
+- [X] Hide api keys
 - [X] move gamedetails to backend
 - [X] move searchApp steam func to backend
 - [ ] Add global game search func (add manually to ownedGames/wishlist)
 - [X] move GetInventory to backend
 - [ ] refactor
 - [ ] remove unused code
-- [ ] check workflow
+- [X] check workflow
 - [ ] test
 - [X] Create a list of wishlist games
 - [X] Add delete function from wishlist
