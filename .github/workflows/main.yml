@@ -1,4 +1,3 @@
-
 name: Build GameVault app
 
 on:
@@ -33,6 +32,9 @@ jobs:
           sudo apt-get update && sudo apt-get install -y cloc
           cloc Backend/GameVaultApi
 
+      - name: Simulate Deployment (Backend)
+        run: echo "Simulated deployment of backend complete!"
+
   frontend:
     name: Build Frontend (.NET)
     runs-on: ubuntu-latest
@@ -43,8 +45,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
@@ -58,3 +60,6 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y cloc
           cloc Frontend
+
+      - name: Simulate Deployment (Frontend)
+        run: echo "Simulated deployment of frontend complete!"
