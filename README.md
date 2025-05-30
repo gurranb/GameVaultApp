@@ -35,8 +35,8 @@ This project was developed as part of a final exam project and is built using Ra
 
 To run the backend API, you need to provide a valid `appsettings.json` file in the `Backend/GameVaultApi` directory with the following structure:
 
-Steam API key: https://steamcommunity.com/dev/
-IGDB: https://api-docs.igdb.com/#getting-started
+- **Steam API key**: [Get it here](https://steamcommunity.com/dev/)
+- **IGDB API credentials**: [IGDB Getting Started](https://api-docs.igdb.com/#getting-started)
 
 ```json
 {
