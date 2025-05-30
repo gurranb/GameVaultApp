@@ -1,6 +1,7 @@
 ﻿@page
 @model IndexModel
 @using Microsoft.AspNetCore.Authorization
+@using GameVaultApp.Helpers
 @{
     ViewData["Title"] = "Home page";
 }
@@ -52,8 +53,8 @@
 
         <hr class="my-5" />
 
-        <!-- Game Search -->
-        <form method="post" class="mb-4">
+        <!-- IGDB Search (Twitch/IGDB) -->
+        <form method="post" asp-page-handler="SearchIgdb" class="mb-1">
             <div class="input-group">
                 <input type="text" name="Query" value="@Model.Query" class="form-control" placeholder="Search games..." />
                 <button type="submit" class="btn btn-primary">Search</button>
@@ -74,7 +75,7 @@
             <div class="alert alert-info">@TempData["InfoMessage"]</div>
         }
 
-        <!-- Search Results -->
+        @* <!-- Search Results -->
         @if (Model.SteamSearchGames != null && Model.SteamSearchGames.Any())
         {
             <ul class="list-group">
@@ -96,6 +97,71 @@
                                 <input type="hidden" name="IconUrl" value="@app.IconUrl" />
                                 <button type="submit" class="btn btn-success btn-sm">Add to GameVault</button>
                             </form>
+                        </div>
+                    </li>
+                }
+            </ul>
+        } *@
+
+
+        @if (Model.IgdbSearchGames != null && Model.IgdbSearchGames.Any())
+        {
+            
+            <ul class="list-group mb-5">
+                @foreach (var game in Model.IgdbSearchGames)
+                {
+                    <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
+                        <div class="d-flex align-items-center mb-2 mb-md-0">
+                            <img src="https:@game.Cover?.Url" alt="@game.Name Cover" class="me-3" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px;" />
+                            <div>
+                                <strong>@game.Name</strong>
+                                <div class="text-muted small">
+                                    Released: @(game.FirstReleaseDate.HasValue
+                              ? DateTimeOffset.FromUnixTimeSeconds(game.FirstReleaseDate.Value).DateTime.ToShortDateString()
+                              : "N/A")
+                                </div>
+                                @if (game.PlatformDetails != null && game.PlatformDetails.Any())
+                                {
+                                    <div class="mt-1 d-flex flex-wrap gap-2 align-items-center">
+                                        @foreach (var platform in game.PlatformDetails)
+                                        {
+                                            <div class="d-flex align-items-center border rounded px-2 py-1 bg-light small">
+                                                @if (!string.IsNullOrWhiteSpace(platform.LogoUrl))
+                                                {
+                                                    <img src="@platform.LogoUrl" alt="@platform.Name Logo" style="height: 18px; margin-right: 6px;" />
+                                                }
+                                                <span>@(platform.Abbreviation ?? platform.Name)</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            @* Add to GameVault *@
+                            <form method="post" asp-page-handler="AddToOwnedGames" class="d-inline">
+                                <input type="hidden" name="AppId" value="@game.Id" />
+                                <input type="hidden" name="Name" value="@game.Name" />
+                                <input type="hidden" name="LogoUrl" value="@(string.IsNullOrEmpty(game.Cover?.Url) ? string.Empty : $"https:{game.Cover.Url}")" />
+                                <input type="hidden" name="IconUrl" value="@game.Cover?.Url ?? string.Empty" />
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    Add to Library
+                                </button>
+                            </form>
+                            <form method="post" asp-page-handler="AddToWishlist" class="d-inline">
+                                <input type="hidden" name="AppId" value="@game.Id" />
+                                <input type="hidden" name="Name" value="@game.Name" />
+                                <input type="hidden" name="LogoUrl" value="@(string.IsNullOrEmpty(game.Cover?.Url) ? string.Empty : $"https:{game.Cover.Url}")" />
+                                <input type="hidden" name="IconUrl" value="" />
+                                <button type="submit" class="btn btn-success btn-sm">Add to Wishlist</button>
+                            </form>
+
+                            @* Optional: Link to IGDB page *@
+                            @if (!string.IsNullOrEmpty(game.Url))
+                            {
+                                <a href="@game.Url" target="_blank" class="btn btn-outline-info btn-sm">IGDB</a>
+                            }
                         </div>
                     </li>
                 }

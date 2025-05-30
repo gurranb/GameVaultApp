@@ -165,25 +165,25 @@ namespace GameVaultApi.Controllers
         }
 
         //GET: search steam apps
-        [HttpGet("search-apps")]
-        public async Task<IActionResult> SearchApps([FromQuery] string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return BadRequest(new { error = "Query cannot be empty." });
+        //[HttpGet("search-apps")]
+        //public async Task<IActionResult> SearchApps([FromQuery] string query)
+        //{
+        //    if (string.IsNullOrWhiteSpace(query))
+        //        return BadRequest(new { error = "Query cannot be empty." });
 
-            try
-            {
-                var results = await _steamService.SearchAppsAsync(query);
-                return Ok(results);
-            }
-            catch (HttpRequestException ex)
-            {
-                return StatusCode(503, new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = ex.Message });
-            }
-        }
+        //    try
+        //    {
+        //        var results = await _steamService.SearchAppsAsync(query);
+        //        return Ok(results);
+        //    }
+        //    catch (HttpRequestException ex)
+        //    {
+        //        return StatusCode(503, new { error = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { error = ex.Message });
+        //    }
+        //}
     }
 }
