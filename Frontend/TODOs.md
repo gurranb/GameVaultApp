@@ -5,12 +5,13 @@
 - [X] Hide api keys
 - [X] move gamedetails to backend
 - [X] move searchApp steam func to backend
-- [ ] Add global game search func (add manually to ownedGames/wishlist)
+- [X] Add global game search func (add manually to ownedGames/wishlist)
 - [X] move GetInventory to backend
-- [ ] refactor
-- [ ] remove unused code
+- [ ] fix workflow ruleset for pipeline to be OK before merge into main (need to pay?)
+- [/] refactor
+- [/] remove unused code
 - [X] check workflow
-- [ ] test
+- [/] test
 - [X] Create a list of wishlist games
 - [X] Add delete function from wishlist
 - [X] Make CI/CD to run app before pushing to main

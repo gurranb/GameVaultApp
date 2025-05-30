@@ -1,5 +1,6 @@
 ﻿using GameVaultApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace GameVaultApi.Data
 {
@@ -12,6 +13,7 @@ namespace GameVaultApi.Data
 
         public DbSet<WishlistItem> WishlistItems { get; set; }
         public DbSet<CachedOwnedGames> CachedOwnedGames { get; set; }
+        public DbSet<OwnedGamesUser> OwnedGamesUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

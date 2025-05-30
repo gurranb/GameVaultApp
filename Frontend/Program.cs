@@ -30,11 +30,19 @@ builder.Services.Configure<ApiSettings>(builder.Configuration);
 
 builder.Services.AddHttpClient<SteamApiClient>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:44311/"); // Or your API base URL
+    client.BaseAddress = new Uri("https://localhost:44311/");
 });
 builder.Services.AddHttpClient<WishlistApiClient>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:44311/");
+});
+builder.Services.AddHttpClient<IgdbApiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:44311");
+});
+builder.Services.AddHttpClient<OwnedGamesUserApiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:44311");
 });
 
 var app = builder.Build();

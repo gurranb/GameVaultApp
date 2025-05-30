@@ -7,5 +7,6 @@
         public string? Name { get; set; }
         public string? LogoUrl { get; set; }
         public string? IconUrl { get; set; }
+
     }
 }

@@ -3,6 +3,7 @@ using GameVaultApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Net;
 using System.Text.Json.Serialization;
 
 
@@ -95,7 +96,7 @@ namespace GameVaultApi.Services.Steam
                 {
                     SteamId = steamId,
                     JsonData = serializedGames,
-                    LastUpdated = time
+                    LastUpdated = time,
                 });
             }
 
@@ -135,12 +136,13 @@ namespace GameVaultApi.Services.Steam
 
             string? lastAssetId = null;
             bool moreItems = true;
+            int MAX_ITEMS_PER_CALL = 500;
 
             while (moreItems)
             {
-                var url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count=5000";
+                var url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count={MAX_ITEMS_PER_CALL}";
                 if (!string.IsNullOrEmpty(lastAssetId))
-                    url += $"&start_assetid={lastAssetId}";
+                    url += $"&start_assetid={WebUtility.UrlEncode(lastAssetId)}";
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
@@ -181,24 +183,24 @@ namespace GameVaultApi.Services.Steam
         }
 
 
-        public async Task<List<Models.Steam.SearchApp>> SearchAppsAsync(string query)
-        {
-            try
-            {
-                var encodedQuery = Uri.EscapeDataString(query);
-                var url = $"https://steamcommunity.com/actions/SearchApps/{encodedQuery}";
+        //public async Task<List<Models.Steam.SearchApp>> SearchAppsAsync(string query)
+        //{
+        //    try
+        //    {
+        //        var encodedQuery = Uri.EscapeDataString(query);
+        //        var url = $"https://steamcommunity.com/actions/SearchApps/{encodedQuery}";
 
-                var response = await _httpClient.GetStringAsync(url);
-                var results = JsonConvert.DeserializeObject<List<Models.Steam.SearchApp>>(response);
+        //        var response = await _httpClient.GetStringAsync(url);
+        //        var results = JsonConvert.DeserializeObject<List<Models.Steam.SearchApp>>(response);
 
-                return results ?? new List<Models.Steam.SearchApp>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching Steam apps for query: {Query}", query);
-                return new List<Models.Steam.SearchApp>();
-            }
-        }
+        //        return results ?? new List<Models.Steam.SearchApp>();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error searching Steam apps for query: {Query}", query);
+        //        return new List<Models.Steam.SearchApp>();
+        //    }
+        //}
 
     }
 

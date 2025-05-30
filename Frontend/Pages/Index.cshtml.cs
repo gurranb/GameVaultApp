@@ -1,5 +1,6 @@
 using GameVaultApp.Areas.Identity.Data;
 using GameVaultApp.Data;
+using GameVaultApp.Migrations;
 using GameVaultApp.Services.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,16 @@ public class IndexModel : PageModel
     private readonly UserManager<GameVaultAppUser> _userManager;
     private readonly SteamApiClient _steamApiClient;
     private readonly WishlistApiClient _wishlistApiClient;
+    private readonly IgdbApiClient _twitchApiClient;
+    public readonly OwnedGamesUserApiClient _ownedGamesUserApiClient;
 
 
     public Models.Steam.SteamProfile SteamProfile { get; set; }
     public GameVaultAppUser MyUser { get; set; }
     public List<Models.Steam.SearchApp> SteamSearchGames { get; set; } = new();
     public List<Models.Steam.OwnedGames> RecentlyPlayedGames { get; set; }
+    public List<Models.Twitch.SearchApp> IgdbSearchGames { get; set; } = new();
+    
 
 
     [BindProperty]
@@ -35,11 +40,13 @@ public class IndexModel : PageModel
     public string IconUrl { get; set; }
 
 
-    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamApiClient steamApiClient, WishlistApiClient wishlistApiClient)
+    public IndexModel(UserManager<GameVaultAppUser> userManager, SteamApiClient steamApiClient, WishlistApiClient wishlistApiClient, IgdbApiClient twitchApiClient, OwnedGamesUserApiClient ownedGamesUserApiClient)
     {
         _userManager = userManager;
         _steamApiClient = steamApiClient;
         _wishlistApiClient = wishlistApiClient;
+        _twitchApiClient = twitchApiClient;
+        _ownedGamesUserApiClient = ownedGamesUserApiClient;
     }
 
 
@@ -88,25 +95,60 @@ public class IndexModel : PageModel
         }
     }
 
+    public async Task<IActionResult> OnPostAddToOwnedGamesAsync()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null || string.IsNullOrWhiteSpace(Name))
+            return RedirectToPage();
+
+        try
+        {
+
+            var success = await _ownedGamesUserApiClient.AddOwnedGameAsync(user.Id, Name, LogoUrl);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = $"{Name} added to your owned games.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = $"{Name} is already in your owned list.";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Failed to add {Name}: {ex.Message}";
+        }
+
+        return RedirectToPage();
+    }
+
     public async Task<IActionResult> OnPostAddToWishlistAsync()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null || string.IsNullOrWhiteSpace(AppId))
             return RedirectToPage(); // Or show error
 
-        if (!int.TryParse(AppId, out int parsedAppId))
-        {
-            TempData["ErrorMessage"] = "Invalid game ID";
-            return RedirectToPage();
-        }
+        bool isSteamApp = int.TryParse(AppId, out int parsedAppId);
 
         // check if game is already owned
         var ownedGamesResult = await _steamApiClient.GetOwnedGamesOnSteamAsync(user.SteamId);
 
-        if (ownedGamesResult.Games != null && ownedGamesResult.Games.Any(g => g.AppId.ToString() == AppId))
+        if (ownedGamesResult.Games != null)
         {
-            TempData["InfoMessage"] = $"{Name} is already owned.";
-            return RedirectToPage();
+            // AppId check (for Steam results)
+            if (isSteamApp && ownedGamesResult.Games.Any(g => g.AppId == parsedAppId))
+            {
+                TempData["InfoMessage"] = $"{Name} is already owned.";
+                return RedirectToPage();
+            }
+
+            // Name check (case-insensitive match)
+            if (ownedGamesResult.Games.Any(g => string.Equals(g.Name, Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                TempData["InfoMessage"] = $"{Name} is already owned.";
+                return RedirectToPage();
+            }
         }
 
         var success = await _wishlistApiClient.AddToWishlistAsync(user.Id, parsedAppId, Name, LogoUrl, IconUrl);
@@ -121,6 +163,17 @@ public class IndexModel : PageModel
         }
 
         return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostSearchIgdbAsync()
+    {
+        await LoadUserDataAsync();
+
+        if (string.IsNullOrWhiteSpace(Query))
+            return Page();
+
+        IgdbSearchGames = await _twitchApiClient.SearchGamesAsync(Query);
+        return Page();
     }
 
 }
