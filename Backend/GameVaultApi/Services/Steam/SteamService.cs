@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
-using System.Text.Json.Serialization;
-
 
 namespace GameVaultApi.Services.Steam
 {
@@ -23,6 +21,7 @@ namespace GameVaultApi.Services.Steam
             _logger = logger;
             _context = context;
         }
+
         // Method to extract the numeric Steam ID from OpenID URL
         private string ExtractSteamId(string steamIdUrl)
         {
@@ -125,7 +124,6 @@ namespace GameVaultApi.Services.Steam
             return games.FirstOrDefault(g => g.AppId == appId);
         }
 
-
         public async Task<Models.Steam.InventoryItems> GetInventoryAsync(string steamId, int appId, int contextId)
         {
             var allItems = new Models.Steam.InventoryItems
@@ -182,7 +180,6 @@ namespace GameVaultApi.Services.Steam
             return result?.Response?.Games ?? new List<Models.Steam.OwnedGames>();
         }
 
-
         //public async Task<List<Models.Steam.SearchApp>> SearchAppsAsync(string query)
         //{
         //    try
@@ -201,7 +198,5 @@ namespace GameVaultApi.Services.Steam
         //        return new List<Models.Steam.SearchApp>();
         //    }
         //}
-
     }
-
 }

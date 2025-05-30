@@ -182,6 +182,5 @@ namespace GameVaultApi.Services.Twitch
 
             return platforms.ToDictionary(p => p.Id, p => p);
         }
-
     }
 }

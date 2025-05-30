@@ -1,6 +1,5 @@
 ﻿using GameVaultApi.DAL.Interfaces;
 using GameVaultApi.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace GameVaultApi.Services.Data
 {
@@ -17,7 +16,7 @@ namespace GameVaultApi.Services.Data
         {
             var wishlist = await _wishlistRepository.GetWishlistByUserIdAsync(userId);
 
-            if(wishlist.Any(i => i.AppId == appId))
+            if (wishlist.Any(i => i.AppId == appId))
             {
                 throw new InvalidOperationException($"Game with AppId {appId} is already in the wishlist.");
             }
