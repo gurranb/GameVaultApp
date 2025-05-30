@@ -7,6 +7,7 @@
 - [X] move searchApp steam func to backend
 - [X] Add global game search func (add manually to ownedGames/wishlist)
 - [X] move GetInventory to backend
+- [X] Change Steam API key
 - [ ] fix workflow ruleset for pipeline to be OK before merge into main (need to pay?)
 - [/] refactor
 - [/] remove unused code
