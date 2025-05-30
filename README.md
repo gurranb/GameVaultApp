@@ -21,7 +21,8 @@ This project was developed as part of a final exam project and is built using Ra
 ## 🧰 Tech Stack
 
 - ASP.NET Core Web App (.NET 8) – Razor Pages  
-- ASP.NET Core Web API  
+- ASP.NET Core Web API
+- Bootstrap
 - Entity Framework Core  
 - SQL Server  
 - Steam Web API  
