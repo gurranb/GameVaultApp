@@ -42,5 +42,10 @@ To run the backend API, you need to provide a valid `appsettings.json` file in t
 {
   "SteamApiKey": "your-steam-api-key",
   "TwitchApiKey": "your-igdb-client-id",
-  "TwitchClientId": "your-igdb-client-secret"
+  "TwitchClientId": "your-igdb-client-secret",
+  "ConnectionStrings": {
+    "GameVaultAppContextConnection": "your-database-connection-string"
+  }
 }
+
+> 💡 **Note:** You must also provide your database connection string in the frontend configuration. 
