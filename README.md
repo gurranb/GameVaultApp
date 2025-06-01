@@ -48,4 +48,4 @@ To run the backend API, you need to provide a valid `appsettings.json` file in t
   }
 }
 
-> 💡 **Note:** You must also provide your database connection string in the frontend configuration. 
+ 💡 **Note:** You must also provide your database connection string in the frontend configuration. 
