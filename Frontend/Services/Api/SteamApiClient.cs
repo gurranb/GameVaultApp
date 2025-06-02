@@ -119,30 +119,31 @@ namespace GameVaultApp.Services.Api
                 return null;
             }
         }
+        // Steam search func
 
-        public async Task<List<SearchApp>> SearchAppsAsync(string query)
-        {
-            try
-            {
-                var url = $"api/steam/search-apps?query={Uri.EscapeDataString(query)}";
-                var response = await _httpClient.GetAsync(url);
+        //public async Task<List<SearchApp>> SearchAppsAsync(string query)
+        //{
+        //    try
+        //    {
+        //        var url = $"api/steam/search-apps?query={Uri.EscapeDataString(query)}";
+        //        var response = await _httpClient.GetAsync(url);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    Console.Error.WriteLine($"Search error: {error}");
-                    return new List<SearchApp>();
-                }
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            var error = await response.Content.ReadAsStringAsync();
+        //            Console.Error.WriteLine($"Search error: {error}");
+        //            return new List<SearchApp>();
+        //        }
 
-                var result = await response.Content.ReadFromJsonAsync<List<SearchApp>>();
-                return result ?? new List<SearchApp>();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error searching apps: {ex.Message}");
-                return new List<SearchApp>();
-            }
-        }
+        //        var result = await response.Content.ReadFromJsonAsync<List<SearchApp>>();
+        //        return result ?? new List<SearchApp>();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.Error.WriteLine($"Error searching apps: {ex.Message}");
+        //        return new List<SearchApp>();
+        //    }
+        //}
 
     }
 }
