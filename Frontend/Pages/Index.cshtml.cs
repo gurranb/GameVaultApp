@@ -20,7 +20,7 @@ public class IndexModel : PageModel
 
     public Models.Steam.SteamProfile SteamProfile { get; set; }
     public GameVaultAppUser MyUser { get; set; }
-    public List<Models.Steam.SearchApp> SteamSearchGames { get; set; } = new();
+    //public List<Models.Steam.SearchApp> SteamSearchGames { get; set; } = new();
     public List<Models.Steam.OwnedGames> RecentlyPlayedGames { get; set; }
     public List<Models.Twitch.SearchApp> IgdbSearchGames { get; set; } = new();
     
@@ -66,7 +66,7 @@ public class IndexModel : PageModel
         if (string.IsNullOrWhiteSpace(Query))
             return Page();
 
-        SteamSearchGames = await _steamApiClient.SearchAppsAsync(Query);
+        //SteamSearchGames = await _steamApiClient.SearchAppsAsync(Query);
 
         return Page();
     }

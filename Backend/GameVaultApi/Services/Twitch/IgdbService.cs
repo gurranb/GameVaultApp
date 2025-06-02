@@ -41,37 +41,6 @@ namespace GameVaultApi.Services.Twitch
             }
         }
 
-        //public async Task<List<Models.Twitch.SearchApp>> SearchIgdbGamesAsync(string accessToken, string searchQuery)
-        //{
-        //    try
-        //    {
-        //        _httpClient.DefaultRequestHeaders.Clear();
-        //        _httpClient.DefaultRequestHeaders.Add("Client-ID", _twitchClientId);
-        //        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-
-        //        var body = $"search \"{searchQuery}\";\nfields name,cover.url,first_release_date,platforms,summary,total_rating,url;\nlimit 10;";
-        //        var content = new StringContent(body, Encoding.UTF8, "text/plain");
-
-        //        var response = await _httpClient.PostAsync("https://api.igdb.com/v4/games", content);
-
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            _logger.LogWarning("IGDB search failed with status code: {StatusCode}", response.StatusCode);
-        //            return new List<Models.Twitch.SearchApp>();
-        //        }
-
-        //        var json = await response.Content.ReadAsStringAsync();
-        //        var results = JsonConvert.DeserializeObject<List<Models.Twitch.SearchApp>>(json);
-
-        //        return results ?? new List<Models.Twitch.SearchApp>();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error searching IGDB for query: {Query}", searchQuery);
-        //        return new List<Models.Twitch.SearchApp>();
-        //    }
-        //}
-
         public async Task<List<SearchApp>> SearchIgdbGamesAsync(string accessToken, string searchQuery)
         {
             try

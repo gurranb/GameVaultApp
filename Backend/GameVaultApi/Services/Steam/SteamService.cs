@@ -180,6 +180,7 @@ namespace GameVaultApi.Services.Steam
             return result?.Response?.Games ?? new List<Models.Steam.OwnedGames>();
         }
 
+        // Search func for steam
         //public async Task<List<Models.Steam.SearchApp>> SearchAppsAsync(string query)
         //{
         //    try
